@@ -15,8 +15,12 @@ defmodule Hyperledger.Mixfile do
   # Type `mix help compile.app` for more information
   def application do
     [mod: {Hyperledger, []},
-     applications: [:phoenix, :cowboy, :logger, :postgrex, :ecto, :poison]]
+     applications: app_list(Mix.env)]
   end
+
+  defp app_list(:dev), do: [:dotenv | app_list]
+  defp app_list(_), do: app_list
+  defp app_list, do: [:phoenix, :cowboy, :logger, :postgrex, :ecto, :poison]
 
   # Specifies your project dependencies
   #
@@ -26,7 +30,7 @@ defmodule Hyperledger.Mixfile do
      {:cowboy, "~> 1.0"},
      {:postgrex, "~> 0.6.0"},
      {:ecto, "~> 0.2.5"},
-     # {:json, "~> 0.3.0"},
-     {:relax, "~> 0.0.1"}]
+     {:relax, "~> 0.0.1"},
+     {:dotenv, "~> 0.0.4"}]
   end
 end

@@ -1,6 +1,7 @@
 %{"cowboy": {:hex, :cowboy, "1.0.0"},
   "cowlib": {:hex, :cowlib, "1.0.0"},
   "decimal": {:hex, :decimal, "0.2.5"},
+  "dotenv": {:hex, :dotenv, "0.0.4"},
   "ecto": {:hex, :ecto, "0.2.8"},
   "inflex": {:hex, :inflex, "0.2.9"},
   "json": {:hex, :json, "0.3.2"},
