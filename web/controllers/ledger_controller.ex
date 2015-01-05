@@ -9,7 +9,7 @@ defmodule Hyperledger.LedgerController do
   end
   
   def create(conn, params) do
-    %{"ledger" => %{"hash" => hash, "public_key" => public_key}} = params
+    %{"ledger" => %{"hash" => hash, "publicKey" => public_key}} = params
     ledger = Hyperledger.Repo.insert(%Hyperledger.Ledger{hash: hash, public_key: public_key})
     json conn, serialize(ledger, conn)
   end

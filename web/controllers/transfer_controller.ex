@@ -7,8 +7,8 @@ defmodule Hyperledger.TransferController do
     %{"transfer" =>
       %{"amount" => amount,
         "uuid" => uuid,
-        "source_public_key" => source_public_key,
-        "destination_public_key" => destination_public_key}
+        "sourcePublicKey" => source_public_key,
+        "destinationPublicKey" => destination_public_key}
       } = params
     transfer = %Hyperledger.Transfer{
       amount: amount,

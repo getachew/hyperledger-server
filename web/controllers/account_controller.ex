@@ -15,8 +15,12 @@ defmodule Hyperledger.AccountController do
   end
 
   def create(conn, params) do
-    %{"account" => %{"public_key" => public_key, "ledger_hash" => ledger_hash}} = params
-    ledger = Hyperledger.Repo.insert(%Hyperledger.Account{public_key: public_key, ledger_hash: ledger_hash, balance: 0})
+    %{"account" => %{"publicKey" => public_key}} = params
+    ledger = %Hyperledger.Account{
+      public_key: public_key,
+      ledger_hash: params["ledger_hash"],
+      balance: 0}
+      |> Hyperledger.Repo.insert
     json conn, serialize(ledger, conn)
   end
   
