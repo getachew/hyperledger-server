@@ -11,4 +11,5 @@
   "poolboy": {:hex, :poolboy, "1.4.2"},
   "postgrex": {:hex, :postgrex, "0.6.0"},
   "ranch": {:hex, :ranch, "1.0.0"},
-  "relax": {:hex, :relax, "0.0.1"}}
+  "relax": {:hex, :relax, "0.0.1"},
+  "uuid": {:hex, :uuid, "0.1.5"}}

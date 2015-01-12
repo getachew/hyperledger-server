@@ -31,6 +31,7 @@ defmodule Hyperledger.Mixfile do
      {:postgrex, "~> 0.6.0"},
      {:ecto, "~> 0.4.0"},
      {:relax, "~> 0.0.1"},
-     {:dotenv, "~> 0.0.4"}]
+     {:dotenv, "~> 0.0.4"},
+     {:uuid, "~> 0.1.5"}]
   end
 end
