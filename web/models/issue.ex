@@ -20,7 +20,7 @@ defmodule Hyperledger.Issue do
       ledger = Repo.get(Ledger, attrs[:ledger_hash])
       [account] = Repo.all assoc(ledger, :primary_account)
 
-      account = %{account | balance: (account.balance + attrs[:amount])}
+      %{account | balance: (account.balance + attrs[:amount])}
       |> Repo.update
       %Issue{
         uuid: UUID.info(attrs[:uuid])[:binary],
