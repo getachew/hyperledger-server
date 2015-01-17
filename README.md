@@ -11,7 +11,9 @@ This software is currently in beta so run at your own risk.
 To start the server:
 
 1. Install dependencies with `mix deps.get`
-2. Run with `mix phoenix.start`
+2. Create a database with `mix ecto.create Hyperledger.Repo`
+3. Run Migration with `mix ecto.migrate Hyperledger.Repo`
+4. Start Hyperledger with `mix phoenix.start`
 
 The endpoint is now running at `localhost:4000`.
 
