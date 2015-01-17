@@ -5,7 +5,8 @@ defmodule Hyperledger.Transfer do
   alias Hyperledger.Transfer
   alias Hyperledger.Account
   
-  schema "transfers", primary_key: {:uuid, :uuid, []} do
+  @primary_key {:uuid, :uuid, []}
+  schema "transfers" do
     field :amount, :integer
     field :created_at, :datetime, default: Ecto.DateTime.local
     field :updated_at, :datetime, default: Ecto.DateTime.local

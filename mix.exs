@@ -9,7 +9,7 @@ defmodule Hyperledger.Mixfile do
      compilers: [:phoenix] ++ Mix.compilers,
      deps: deps]
   end
-
+  
   # Configuration for the OTP application
   #
   # Type `mix help compile.app` for more information
@@ -26,10 +26,10 @@ defmodule Hyperledger.Mixfile do
   #
   # Type `mix help deps` for examples and options
   defp deps do
-    [{:phoenix, "~> 0.7.2"},
+    [{:phoenix, "~> 0.8.0"},
      {:cowboy, "~> 1.0"},
      {:postgrex, "~> 0.6.0"},
-     {:ecto, "~> 0.4.0"},
+     {:ecto, "~> 0.5.1"},
      {:relax, "~> 0.0.1"},
      {:dotenv, "~> 0.0.4"},
      {:uuid, "~> 0.1.5"}]

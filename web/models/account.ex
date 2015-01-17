@@ -1,7 +1,8 @@
 defmodule Hyperledger.Account do
   use Ecto.Model
-
-  schema "accounts", primary_key: {:public_key, :string, []} do
+  
+  @primary_key {:public_key, :string, []}
+  schema "accounts" do
     field :balance, :integer, default: 0
     field :created_at, :datetime, default: Ecto.DateTime.local
     field :updated_at, :datetime, default: Ecto.DateTime.local

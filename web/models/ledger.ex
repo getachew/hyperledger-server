@@ -7,7 +7,8 @@ defmodule Hyperledger.Ledger do
   alias Hyperledger.Issue
   alias Hyperledger.Transfer
   
-  schema "ledgers", primary_key: {:hash, :string, []} do
+  @primary_key {:hash, :string, []}
+  schema "ledgers" do
     field :public_key, :string
     field :created_at, :datetime, default: Ecto.DateTime.local
     field :updated_at, :datetime, default: Ecto.DateTime.local

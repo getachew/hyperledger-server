@@ -6,7 +6,8 @@ defmodule Hyperledger.Issue do
   alias Hyperledger.Ledger
   alias Hyperledger.Account
   
-  schema "issues", primary_key: {:uuid, :uuid, []} do
+  @primary_key {:uuid, :uuid, []}
+  schema "issues" do
     field :amount, :integer
     field :created_at, :datetime, default: Ecto.DateTime.local
     field :updated_at, :datetime, default: Ecto.DateTime.local
