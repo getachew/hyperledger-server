@@ -1,26 +1,31 @@
 defmodule Hyperledger.AccountController do
   use Phoenix.Controller
-
+  use Ecto.Model
+  
+  alias Hyperledger.Repo
+  alias Hyperledger.Ledger
+  alias Hyperledger.Account
+  
   plug :action
 
   def index(conn, params) do
-    ledger = Hyperledger.Repo.get(Hyperledger.Ledger, params["ledger_id"])
-    accounts = Hyperledger.Repo.all(ledger.accounts)
+    ledger = Repo.get(Ledger, params["ledger_id"])
+    accounts = Repo.all assoc(ledger, :accounts)
     json conn, serialize(accounts, conn)
   end
 
   def show(conn, params) do
-    account = Hyperledger.Repo.get(Hyperledger.Account, params["account_id"])
+    account = Repo.get(Account, params["account_id"])
     json conn, serialize(account, conn)
   end
 
   def create(conn, params) do
     %{"account" => %{"publicKey" => public_key}} = params
-    ledger = %Hyperledger.Account{
+    ledger = %Account{
       public_key: public_key,
       ledger_hash: params["ledger_hash"],
       balance: 0}
-      |> Hyperledger.Repo.insert
+      |> Repo.insert
     json conn, serialize(ledger, conn)
   end
   
