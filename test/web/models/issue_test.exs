@@ -4,7 +4,6 @@ defmodule Hyperledger.ModelTest.Issue do
   
   alias Hyperledger.Repo
   alias Hyperledger.Issue
-  alias Hyperledger.Account
   alias Hyperledger.Ledger
   
   setup do

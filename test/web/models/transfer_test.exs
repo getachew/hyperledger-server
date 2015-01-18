@@ -32,7 +32,6 @@ defmodule Hyperledger.ModelTest.Transfer do
   end
 
   test "`create` modifies the balance of the source and dest wallet" do
-    uuid = UUID.uuid4
     Transfer.create(
       uuid: UUID.uuid4,
       source_public_key: "234",
