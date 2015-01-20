@@ -4,7 +4,6 @@ defmodule Hyperledger.Issue do
   alias Hyperledger.Repo
   alias Hyperledger.Issue
   alias Hyperledger.Ledger
-  alias Hyperledger.Account
   
   @primary_key {:uuid, :uuid, []}
   schema "issues" do
