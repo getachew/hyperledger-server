@@ -7,6 +7,8 @@ defmodule Hyperledger.LogEntry do
   alias Hyperledger.Account
   alias Hyperledger.Issue
   alias Hyperledger.Transfer
+  alias Hyperledger.Node
+  alias Hyperledger.PrepareConfirmation
 
   schema "log_entries" do
     field :command, :string
@@ -14,12 +16,15 @@ defmodule Hyperledger.LogEntry do
     field :signature, :string
     field :created_at, :datetime, default: Ecto.DateTime.local
     field :updated_at, :datetime, default: Ecto.DateTime.local
+  
+    has_many :prepare_confirmations, PrepareConfirmation
   end
   
   def create(command: command, data: data) do
     Repo.transaction(fn -> 
       log_entry = %LogEntry{command: command, data: data}
       {:ok, params} = Poison.decode(data)
+      
       case command do
         
         "ledger/create" ->
@@ -31,7 +36,6 @@ defmodule Hyperledger.LogEntry do
           
           Ledger.create(hash: hash, public_key: public_key,
             primary_account_public_key: acc_public_key)
-          Repo.insert(log_entry)
         
         "account/create" ->
           %{"account" => %{
@@ -41,7 +45,6 @@ defmodule Hyperledger.LogEntry do
         
           %Account{ledger_hash: hash, public_key: public_key}
           |> Repo.insert
-          Repo.insert(log_entry)
           
         "issue/create" ->
           %{"issue" => %{
@@ -52,7 +55,6 @@ defmodule Hyperledger.LogEntry do
         
           Issue.create(uuid: uuid, ledger_hash: hash, amount: amount)
           Repo.get(Account, hash)
-          Repo.insert(log_entry)
           
         "transfer/create" ->
           %{"transfer" => %{
@@ -67,8 +69,16 @@ defmodule Hyperledger.LogEntry do
             amount: amount,
             source_public_key: source_public_key,
             destination_public_key: destination_public_key)
-          Repo.insert(log_entry)
+
       end
+      
+      log_entry = Repo.insert(log_entry)
+      
+      prep_conf = build(log_entry, :prepare_confirmations)
+      %{ prep_conf | signature: "temp_signature", node_id: Node.self_id }
+      |> Repo.insert
+
+      log_entry
     end)
   end
   

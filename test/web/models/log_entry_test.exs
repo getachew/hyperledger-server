@@ -1,5 +1,6 @@
 defmodule Hyperledger.LogEntryModelTest do
   use HyperledgerTest.Case
+  use Ecto.Model
   
   alias Hyperledger.Repo
   alias Hyperledger.LogEntry
@@ -7,6 +8,25 @@ defmodule Hyperledger.LogEntryModelTest do
   alias Hyperledger.Account
   alias Hyperledger.Issue
   alias Hyperledger.Transfer
+  alias Hyperledger.Node
+  
+  setup do
+    System.put_env("NODE_URL", "http://localhost")
+    %Node{url: "http://localhost", public_key: "abc"} |> Repo.insert
+    :ok
+  end
+  
+  test "creating a log entry also appends a prepare confirmation from self" do    
+    {:ok, data} = %{ledger:
+                    %{hash: "123",
+                      publicKey: "abc",
+                      primaryAccountPublicKey: "cde"}}
+                  |> Poison.encode
+    
+    {:ok, log_entry} = LogEntry.create command: "ledger/create", data: data
+    
+    assert Repo.all(assoc(log_entry, :prepare_confirmations)) |> Enum.count == 1
+  end
   
   test "log entries create ledgers with a primary account" do
     {:ok, data} = %{ledger: %{hash: "123", publicKey: "abc", primaryAccountPublicKey: "cde"}}
