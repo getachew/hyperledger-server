@@ -10,8 +10,8 @@ defmodule Hyperledger.Ledger do
   @primary_key {:hash, :string, []}
   schema "ledgers" do
     field :public_key, :string
-    field :created_at, :datetime, default: Ecto.DateTime.local
-    field :updated_at, :datetime, default: Ecto.DateTime.local
+    
+    timestamps
     
     has_many :accounts,  Account
     has_many :issues,    Issue

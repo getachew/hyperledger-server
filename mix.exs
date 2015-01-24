@@ -29,7 +29,7 @@ defmodule Hyperledger.Mixfile do
     [{:phoenix, "~> 0.8.0"},
      {:cowboy, "~> 1.0"},
      {:postgrex, "~> 0.6.0"},
-     {:ecto, "~> 0.5.1"},
+     {:ecto, "~> 0.6.0"},
      {:relax, "~> 0.0.1"},
      {:dotenv, "~> 0.0.4"},
      {:uuid, "~> 0.1.5"}]

@@ -2,15 +2,16 @@ defmodule Hyperledger.Repo.Migrations.InitialLedgersCreate do
   use Ecto.Migration
 
   def up do
-    "CREATE TABLE ledgers( \
-      hash varchar(255) primary key, \
-      public_key varchar(255), \
-      primary_account_public_key varchar(255), \
-      created_at timestamp, \
-      updated_at timestamp)"
+    create table(:ledgers, primary_key: false) do
+      add :hash, :string, primary_key: true
+      add :public_key, :string
+      add :primary_account_public_key, :string
+      
+      timestamps
+    end
   end
 
   def down do
-    "DROP TABLE ledgers"
+    drop table(:ledgers)
   end
 end

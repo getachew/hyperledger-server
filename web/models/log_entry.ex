@@ -14,9 +14,11 @@ defmodule Hyperledger.LogEntry do
     field :command, :string
     field :data, :string
     field :signature, :string
-    field :created_at, :datetime, default: Ecto.DateTime.local
-    field :updated_at, :datetime, default: Ecto.DateTime.local
-  
+    field :prepared, :boolean, default: false
+    field :confirmed, :boolean, default: false
+
+    timestamps
+      
     has_many :prepare_confirmations, PrepareConfirmation
   end
   

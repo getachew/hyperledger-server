@@ -8,8 +8,8 @@ defmodule Hyperledger.Transfer do
   @primary_key {:uuid, :uuid, []}
   schema "transfers" do
     field :amount, :integer
-    field :created_at, :datetime, default: Ecto.DateTime.local
-    field :updated_at, :datetime, default: Ecto.DateTime.local
+
+    timestamps
     
     belongs_to :source, Account,
       foreign_key: :source_public_key,

@@ -2,15 +2,15 @@ defmodule :"Elixir.Hyperledger.Repo.Migrations.InitalNodeCreate.exs" do
   use Ecto.Migration
 
   def up do
-    "CREATE TABLE nodes(
-      id serial primary key, \
-      url varchar(255), \
-      public_key text, \
-      created_at timestamp, \
-      updated_at timestamp)"
+    create table(:nodes) do
+      add :url, :string
+      add :public_key, :string
+
+      timestamps
+    end
   end
 
   def down do
-    "DROP TABLE nodes"
+    drop table(:nodes)
   end
 end

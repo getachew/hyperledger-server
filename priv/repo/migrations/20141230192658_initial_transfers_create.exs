@@ -2,16 +2,19 @@ defmodule Hyperledger.Repo.Migrations.InitialTransfersCreate do
   use Ecto.Migration
 
   def up do
-    "CREATE TABLE transfers(
-      uuid uuid primary key, \
-      source_public_key varchar(255), \
-      destination_public_key varchar(255), \
-      amount integer, \
-      created_at timestamp, \
-      updated_at timestamp)"
+    create table(:transfers, primary_key: false) do
+      add :uuid, :uuid, primary_key: true
+      add :amount, :integer
+      add :source_public_key, :string,
+        references: :accounts, column: :public_key, type: :string
+      add :destination_public_key, :string,
+        references: :accounts, column: :public_key, type: :string
+    
+      timestamps
+    end
   end
 
   def down do
-    "DROP TABLE transfers"
+    drop table(:transfers)
   end
 end

@@ -6,9 +6,9 @@ defmodule Hyperledger.PrepareConfirmation do
   
   schema "prepare_confirmations" do
     field :signature, :string
-    field :created_at, :datetime, default: Ecto.DateTime.local
-    field :updated_at, :datetime, default: Ecto.DateTime.local
 
+    timestamps
+    
     belongs_to :log_entry, LogEntry
     belongs_to :node, Node
   end

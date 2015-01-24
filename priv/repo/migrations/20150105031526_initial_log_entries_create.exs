@@ -2,16 +2,18 @@ defmodule Hyperledger.Repo.Migrations.InitialLogEntriesCreate do
   use Ecto.Migration
 
   def up do
-    "CREATE TABLE log_entries(
-      id serial primary key, \
-      command varchar(255), \
-      data text, \
-      signature text, \
-      created_at timestamp, \
-      updated_at timestamp)"
+    create table(:log_entries) do
+      add :command, :string
+      add :data, :string
+      add :signature, :string
+      add :prepared, :boolean, default: false
+      add :confirmed, :boolean, default: false
+      
+      timestamps
+    end
   end
 
   def down do
-    "DROP TABLE log_entries"
+    drop table(:log_entries)
   end
 end

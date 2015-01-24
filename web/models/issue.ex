@@ -8,8 +8,8 @@ defmodule Hyperledger.Issue do
   @primary_key {:uuid, :uuid, []}
   schema "issues" do
     field :amount, :integer
-    field :created_at, :datetime, default: Ecto.DateTime.local
-    field :updated_at, :datetime, default: Ecto.DateTime.local
+
+    timestamps
     
     belongs_to :ledger, Ledger,
       foreign_key: :ledger_hash, type: :string

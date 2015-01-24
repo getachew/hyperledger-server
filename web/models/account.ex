@@ -4,8 +4,8 @@ defmodule Hyperledger.Account do
   @primary_key {:public_key, :string, []}
   schema "accounts" do
     field :balance, :integer, default: 0
-    field :created_at, :datetime, default: Ecto.DateTime.local
-    field :updated_at, :datetime, default: Ecto.DateTime.local
+
+    timestamps
     
     belongs_to :ledger, Hyperledger.Ledger,
       foreign_key: :ledger_hash, type: :string
