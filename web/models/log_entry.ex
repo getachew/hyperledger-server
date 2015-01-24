@@ -56,7 +56,6 @@ defmodule Hyperledger.LogEntry do
           }} = params
         
           Issue.create(uuid: uuid, ledger_hash: hash, amount: amount)
-          Repo.get(Account, hash)
           
         "transfer/create" ->
           %{"transfer" => %{
