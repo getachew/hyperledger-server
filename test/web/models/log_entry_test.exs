@@ -16,16 +16,21 @@ defmodule Hyperledger.LogEntryModelTest do
     :ok
   end
   
-  test "creating a log entry also appends a prepare confirmation from self" do    
-    {:ok, data} = %{ledger:
-                    %{hash: "123",
-                      publicKey: "abc",
-                      primaryAccountPublicKey: "cde"}}
-                  |> Poison.encode
-    
-    {:ok, log_entry} = LogEntry.create command: "ledger/create", data: data
+  test "creating a log entry also appends a prepare confirmation from self" do
+    {:ok, log_entry} = LogEntry.create command: "ledger/create", data: "{}"
         
     assert Repo.all(assoc(log_entry, :prepare_confirmations)) |> Enum.count == 1
+  end
+  
+  test "when a log entry passes the quorum for prepare confirmations it is marked as prepared" do
+    node = %Node{url: "http://localhost-2", public_key: "abc"} |> Repo.insert
+    
+    {:ok, log_entry} = LogEntry.create command: "ledger/create", data: "{}"
+    assert log_entry.prepared == false
+    
+    LogEntry.add_prepare(log_entry, signature: "temp_signature", node_id: node.id)
+    
+    assert Repo.get(LogEntry, log_entry.id).prepared == true
   end
   
   test "executing log entry creates ledger with a primary account" do

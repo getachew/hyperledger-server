@@ -23,17 +23,30 @@ defmodule Hyperledger.LogEntry do
   end
   
   def create(command: command, data: data) do
-    Repo.transaction(fn -> 
+    Repo.transaction fn -> 
       log_entry = %LogEntry{command: command, data: data}
       log_entry = Repo.insert(log_entry)
-      
-      prep_conf = build(log_entry, :prepare_confirmations)
-      %{ prep_conf | signature: "temp_signature", node_id: Node.self_id }
-      |> Repo.insert
-
+      add_prepare log_entry, signature: "temp_signature", node_id: Node.self_id
       log_entry
-    end)
+    end
   end
+  
+  def add_prepare(log_entry, signature: signature, node_id: node_id) do
+    Repo.transaction fn ->
+      prep_conf = build(log_entry, :prepare_confirmations)
+      %{ prep_conf | signature: signature, node_id: node_id }
+      |> Repo.insert
+      
+      prep_conf_count = Repo.all(assoc(log_entry, :prepare_confirmations))
+                        |> Enum.count
+            
+      if (prep_conf_count >= Node.quorum and log_entry.prepared == false) do
+        %{ log_entry | prepared: true}
+        |> Repo.update
+      end
+    end
+  end
+  
   
   def execute(log_entry) do
     {:ok, params} = Poison.decode(log_entry.data)
