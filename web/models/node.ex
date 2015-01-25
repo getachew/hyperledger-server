@@ -20,4 +20,10 @@ defmodule Hyperledger.Node do
     [node] = Repo.all(from n in Node, where: n.url == ^System.get_env["NODE_URL"], select: n)
     node.id
   end
+  
+  def quorum do
+    node_count = Repo.all(Node) |> Enum.count
+    node_count - div(node_count - 1, 3)
+  end
+  
 end
