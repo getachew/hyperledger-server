@@ -17,15 +17,17 @@ defmodule Hyperledger.LogEntryModelTest do
   end
   
   test "creating a log entry also appends a prepare confirmation from self" do
-    {:ok, log_entry} = LogEntry.create command: "ledger/create", data: "{}"
+    {:ok, data} = %{ledger: %{hash: "123", publicKey: "abc", primaryAccountPublicKey: "cde"}}
+                  |> Poison.encode
+    {:ok, log_entry} = LogEntry.create command: "ledger/create", data: data
         
     assert Repo.all(assoc(log_entry, :prepare_confirmations)) |> Enum.count == 1
   end
   
   test "when a log entry passes the quorum for prepare confirmations it is marked as prepared" do
     node = %Node{url: "http://localhost-2", public_key: "abc"} |> Repo.insert
-    
     {:ok, log_entry} = LogEntry.create command: "ledger/create", data: "{}"
+    
     assert log_entry.prepared == false
     
     LogEntry.add_prepare(log_entry, signature: "temp_signature", node_id: node.id)
@@ -33,12 +35,37 @@ defmodule Hyperledger.LogEntryModelTest do
     assert Repo.get(LogEntry, log_entry.id).prepared == true
   end
   
+  test "when a log entry is marked as prepared the node adds a commit confirmation" do
+    node = %Node{url: "http://localhost-2", public_key: "abc"} |> Repo.insert
+    {:ok, log_entry} = LogEntry.create command: "ledger/create", data: "{}"
+
+    assert Repo.all(assoc(log_entry, :commit_confirmations)) == []
+    
+    LogEntry.add_prepare(log_entry, signature: "temp_signature", node_id: node.id)
+    
+    assert Repo.all(assoc(log_entry, :commit_confirmations)) |> Enum.count == 1
+  end
+  
+  test "when a log entry passes the quorum for commit confirmations it is marked as committed and executed" do
+    node = %Node{url: "http://localhost-2", public_key: "abc"} |> Repo.insert
+    {:ok, data} = %{ledger: %{hash: "123", publicKey: "abc", primaryAccountPublicKey: "cde"}}
+                  |> Poison.encode
+    {:ok, log_entry} = LogEntry.create command: "ledger/create", data: data
+    LogEntry.add_prepare(log_entry, signature: "temp_signature", node_id: node.id)
+    
+    assert Repo.get(LogEntry, log_entry.id).committed == false
+
+    LogEntry.add_commit(log_entry, signature: "temp_signature", node_id: node.id)
+    
+    assert Repo.get(LogEntry, log_entry.id).committed == true
+  end
+  
   test "executing log entry creates ledger with a primary account" do
     {:ok, data} = %{ledger: %{hash: "123", publicKey: "abc", primaryAccountPublicKey: "cde"}}
                   |> Poison.encode
     {:ok, log_entry} = LogEntry.create command: "ledger/create", data: data
     
-    LogEntry.execute(log_entry)
+    # LogEntry.execute(log_entry)
     
     assert Repo.all(LogEntry) |> Enum.count == 1
     assert Repo.all(Ledger)   |> Enum.count == 1
@@ -50,7 +77,7 @@ defmodule Hyperledger.LogEntryModelTest do
                   |> Poison.encode
     {:ok, log_entry} = LogEntry.create command: "account/create", data: data
     
-    LogEntry.execute(log_entry)
+    # LogEntry.execute(log_entry)
     
     assert Repo.all(LogEntry) |> Enum.count == 1
     assert Repo.all(Account)  |> Enum.count == 1
@@ -66,7 +93,7 @@ defmodule Hyperledger.LogEntryModelTest do
     
     {:ok, log_entry} = LogEntry.create command: "issue/create", data: data
     
-    LogEntry.execute(log_entry)
+    # LogEntry.execute(log_entry)
     
     assert Repo.all(LogEntry) |> Enum.count == 1
     assert Repo.all(Issue)    |> Enum.count == 1
@@ -85,7 +112,7 @@ defmodule Hyperledger.LogEntryModelTest do
                   |> Poison.encode
     
     {:ok, log_entry} = LogEntry.create command: "transfer/create", data: data
-    LogEntry.execute(log_entry)
+    # LogEntry.execute(log_entry)
     
     assert Repo.all(Transfer)    |> Enum.count == 1
     assert Repo.get(Account, "cde").balance == 0

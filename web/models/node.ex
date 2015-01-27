@@ -6,6 +6,7 @@ defmodule Hyperledger.Node do
   alias Hyperledger.Repo
   alias Hyperledger.Node
   alias Hyperledger.PrepareConfirmation
+  alias Hyperledger.CommitConfirmation
   
   schema "nodes" do
     field :url, :string
@@ -14,6 +15,7 @@ defmodule Hyperledger.Node do
     timestamps
     
     has_many :prepare_confirmations, PrepareConfirmation
+    has_many :commit_confirmations, CommitConfirmation
   end
   
   def self_id do
