@@ -17,6 +17,7 @@ defmodule Hyperledger.LogEntry do
     field :signature, :string
     field :prepared, :boolean, default: false
     field :committed, :boolean, default: false
+    field :executed, :boolean, default: false
 
     timestamps
       
@@ -42,7 +43,7 @@ defmodule Hyperledger.LogEntry do
       prep_conf_count = Repo.all(assoc(log_entry, :prepare_confirmations))
                         |> Enum.count
             
-      if (prep_conf_count >= Node.quorum and log_entry.prepared == false) do
+      if (prep_conf_count >= Node.quorum and !log_entry.prepared) do
         %{ log_entry | prepared: true}
         |> Repo.update
         
@@ -60,10 +61,15 @@ defmodule Hyperledger.LogEntry do
       commit_conf_count = Repo.all(assoc(log_entry, :commit_confirmations))
                           |> Enum.count
             
-      if (commit_conf_count >= Node.quorum and log_entry.committed == false) do
+      if (commit_conf_count >= Node.quorum and !log_entry.committed) do
         %{ log_entry | committed: true}
         |> Repo.update
-        execute(log_entry)
+        
+        # If previous log entry has been executed then execute
+        prev_log_entry = Repo.get(LogEntry, log_entry.id - 1)
+        if is_nil(prev_log_entry) or prev_log_entry.executed do
+          execute(log_entry)
+        end
       end
     end
   end
@@ -113,6 +119,13 @@ defmodule Hyperledger.LogEntry do
           amount: amount,
           source_public_key: source_public_key,
           destination_public_key: destination_public_key)
+    end
+    
+    # Mark as executed and check if there's a follow entry to execute
+    # %{ log_entry | executed: true } |> Repo.insert
+    next_entry = Repo.get(LogEntry, log_entry.id + 1)
+    unless is_nil(next_entry) do
+      execute(next_entry)
     end
   end
   

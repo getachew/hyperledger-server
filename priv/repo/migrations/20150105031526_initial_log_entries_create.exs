@@ -8,6 +8,7 @@ defmodule Hyperledger.Repo.Migrations.InitialLogEntriesCreate do
       add :signature, :string
       add :prepared, :boolean, default: false
       add :committed, :boolean, default: false
+      add :executed, :boolean, default: false
       
       timestamps
     end

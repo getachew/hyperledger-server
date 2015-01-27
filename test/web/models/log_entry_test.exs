@@ -60,13 +60,31 @@ defmodule Hyperledger.LogEntryModelTest do
     assert Repo.get(LogEntry, log_entry.id).committed == true
   end
   
+  test "log entries executed in order" do
+    node = %Node{url: "http://localhost-2", public_key: "abc"} |> Repo.insert
+    {:ok, data_1} = %{ledger: %{hash: "123", publicKey: "abc", primaryAccountPublicKey: "cde"}}
+                    |> Poison.encode
+    {:ok, data_2} = %{ledger: %{hash: "456", publicKey: "abc", primaryAccountPublicKey: "fgh"}}
+                    |> Poison.encode
+    {:ok, log_entry_1} = LogEntry.create command: "ledger/create", data: data_1
+    {:ok, log_entry_2} = LogEntry.create command: "ledger/create", data: data_2
+    LogEntry.add_prepare(log_entry_1, signature: "temp_signature", node_id: node.id)
+    LogEntry.add_prepare(log_entry_2, signature: "temp_signature", node_id: node.id)
+    
+    LogEntry.add_commit(log_entry_2, signature: "temp_signature", node_id: node.id)
+    
+    assert Repo.all(Ledger) |> Enum.count == 0
+
+    LogEntry.add_commit(log_entry_1, signature: "temp_signature", node_id: node.id)
+    
+    assert Repo.all(Ledger) |> Enum.count == 2
+  end
+  
   test "executing log entry creates ledger with a primary account" do
     {:ok, data} = %{ledger: %{hash: "123", publicKey: "abc", primaryAccountPublicKey: "cde"}}
                   |> Poison.encode
-    {:ok, log_entry} = LogEntry.create command: "ledger/create", data: data
-    
-    # LogEntry.execute(log_entry)
-    
+    LogEntry.create command: "ledger/create", data: data
+        
     assert Repo.all(LogEntry) |> Enum.count == 1
     assert Repo.all(Ledger)   |> Enum.count == 1
     assert Repo.all(Account)  |> Enum.count == 1
@@ -75,10 +93,8 @@ defmodule Hyperledger.LogEntryModelTest do
   test "executing log entry creates account" do
     {:ok, data} = %{account: %{ledgerHash: "abc", publicKey: "cde"}}
                   |> Poison.encode
-    {:ok, log_entry} = LogEntry.create command: "account/create", data: data
-    
-    # LogEntry.execute(log_entry)
-    
+    LogEntry.create command: "account/create", data: data
+        
     assert Repo.all(LogEntry) |> Enum.count == 1
     assert Repo.all(Account)  |> Enum.count == 1
   end
@@ -91,10 +107,8 @@ defmodule Hyperledger.LogEntryModelTest do
                       amount: 100}}
                   |> Poison.encode
     
-    {:ok, log_entry} = LogEntry.create command: "issue/create", data: data
-    
-    # LogEntry.execute(log_entry)
-    
+    LogEntry.create command: "issue/create", data: data
+        
     assert Repo.all(LogEntry) |> Enum.count == 1
     assert Repo.all(Issue)    |> Enum.count == 1
     assert Repo.get(Account, "cde").balance == 100
@@ -111,8 +125,7 @@ defmodule Hyperledger.LogEntryModelTest do
                       destinationPublicKey: "def"}}
                   |> Poison.encode
     
-    {:ok, log_entry} = LogEntry.create command: "transfer/create", data: data
-    # LogEntry.execute(log_entry)
+    LogEntry.create command: "transfer/create", data: data
     
     assert Repo.all(Transfer)    |> Enum.count == 1
     assert Repo.get(Account, "cde").balance == 0
