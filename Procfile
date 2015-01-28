@@ -1,0 +1,1 @@
+web: MIX_ENV=prod PORT=$PORT elixir -pa _build/prod/consolidated -S mix phoenix.server
