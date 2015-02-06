@@ -9,6 +9,7 @@ defmodule Hyperledger.Router do
   scope "/", Hyperledger do
     pipe_through :api
 
+    resources "/", PageController, only: [:index]
     resources "/ledgers", LedgerController, only: [:index, :create] do
       resources "/accounts", AccountController, only: [:index, :show, :create]
       resources "/issues", IssueController, only: [:create]
