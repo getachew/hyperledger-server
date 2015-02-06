@@ -6,7 +6,8 @@ Mix.Task.run "ecto.migrate", ["Hyperledger.Repo"]
 
 defmodule HyperledgerTest.Case do
   use ExUnit.CaseTemplate
-
+  use Plug.Test
+  
   alias Ecto.Adapters.Postgres
 
   setup do
@@ -21,4 +22,10 @@ defmodule HyperledgerTest.Case do
       import HyperledgerTest.Case
     end
   end
+  
+  def call(router, verb, path, params \\ nil, headers \\ []) do
+    conn = conn(verb, path, params, headers) |> Plug.Conn.fetch_params
+    router.call(conn, router.init([]))
+  end
+
 end

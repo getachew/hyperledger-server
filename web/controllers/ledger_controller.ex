@@ -1,22 +1,25 @@
 defmodule Hyperledger.LedgerController do
   use Phoenix.Controller
+  
+  alias Hyperledger.Repo
+  alias Hyperledger.Ledger
+  alias Hyperledger.LogEntry
 
   plug :action
 
   def index(conn, _params) do
-    ledgers = Hyperledger.Repo.all(Hyperledger.Ledger)
-    json conn, serialize(ledgers, conn)
+    ledgers = Repo.all(Ledger)
+    render conn, "index.json", ledgers: ledgers
   end
   
   def create(conn, params) do
-    %{"ledger" => %{"hash" => hash, "publicKey" => public_key}} = params
-    ledger = Hyperledger.Repo.insert(%Hyperledger.Ledger{hash: hash, public_key: public_key})
-    json conn, serialize(ledger, conn)
-  end
-  
-  defp serialize(obj, conn) do
-    obj
-    |> Hyperledger.LedgerSerializer.as_json(conn, %{})
-    |> Poison.encode!
+    {:ok, json_data} = params
+    |> Map.take(["ledger"])
+    |> Poison.encode
+    LogEntry.create(command: "ledger/create", data: json_data)
+    ledger = Repo.get(Ledger, params["ledger"]["hash"])
+    conn
+    |> put_status(:created)
+    |> render "show.json", ledger: ledger
   end
 end
