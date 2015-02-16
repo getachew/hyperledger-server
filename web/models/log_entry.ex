@@ -38,7 +38,6 @@ defmodule Hyperledger.LogEntry do
   
   def insert(id: id, view: view, command: command, data: data) do
     Repo.transaction fn ->
-      node_count = Repo.all(Node) |> Enum.count
       if Node.self_id != 1 do
         log_entry = %LogEntry{id: id, view: view, command: command, data: data}
         log_entry = Repo.insert(log_entry)
