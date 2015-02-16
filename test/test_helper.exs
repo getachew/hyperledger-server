@@ -8,12 +8,13 @@ defmodule HyperledgerTest.Case do
   use ExUnit.CaseTemplate
   use Plug.Test
   
-  alias Ecto.Adapters.Postgres
+  alias Ecto.Adapters.SQL
+  alias Hyperledger.Repo
 
   setup do
-    Postgres.begin_test_transaction(Hyperledger.Repo)
+    SQL.begin_test_transaction(Repo)
     on_exit fn ->
-      Postgres.rollback_test_transaction(Hyperledger.Repo)
+      SQL.rollback_test_transaction(Repo)
     end
   end
 

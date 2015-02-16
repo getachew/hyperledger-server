@@ -28,8 +28,8 @@ defmodule Hyperledger.Mixfile do
   defp deps do
     [{:phoenix, "~> 0.9.0"},
      {:cowboy, "~> 1.0"},
-     {:postgrex, "~> 0.6.0"},
-     {:ecto, "~> 0.6.0"},
+     {:postgrex, "~> 0.7.0"},
+     {:ecto, "~> 0.8.1"},
      {:relax, "~> 0.0.1"},
      {:dotenv, "~> 0.0.4"},
      {:uuid, "~> 0.1.5"}]
