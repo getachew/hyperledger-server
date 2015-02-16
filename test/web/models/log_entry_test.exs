@@ -12,8 +12,17 @@ defmodule Hyperledger.LogEntryModelTest do
   
   setup do
     System.put_env("NODE_URL", "http://localhost")
-    %Node{url: "http://localhost", public_key: "abc"} |> Repo.insert
+    %Node{id: 1, url: "http://localhost", public_key: "abc"} |> Repo.insert
     :ok
+  end
+  
+  test "creating the first log entry sets the id and view to 1" do
+    {:ok, data} = %{ledger: %{hash: "123", publicKey: "abc", primaryAccountPublicKey: "cde"}}
+                  |> Poison.encode
+    {:ok, log_entry} = LogEntry.create command: "ledger/create", data: data
+        
+    assert log_entry.id   == 1
+    assert log_entry.view == 1
   end
   
   test "creating a log entry also appends a prepare confirmation from self" do
@@ -24,8 +33,24 @@ defmodule Hyperledger.LogEntryModelTest do
     assert Repo.all(assoc(log_entry, :prepare_confirmations)) |> Enum.count == 1
   end
   
+  test "inserting a log entry returns error if node is the primary" do
+    {:ok, data} = %{ledger: %{hash: "123", publicKey: "abc", primaryAccountPublicKey: "cde"}}
+                  |> Poison.encode
+
+    assert {:error, _} = LogEntry.insert(id: 1, view: 1, command: "ledger/create", data: data)
+  end
+  
+  test "inserting a log entry returns ok if node is not primary" do
+    System.put_env("NODE_URL", "http://localhost-2")
+    %Node{id: 2, url: "http://localhost-2", public_key: "abc"} |> Repo.insert
+    {:ok, data} = %{ledger: %{hash: "123", publicKey: "abc", primaryAccountPublicKey: "cde"}}
+                  |> Poison.encode
+
+    assert {:ok, _} = LogEntry.insert(id: 1, view: 1, command: "ledger/create", data: data)
+  end
+  
   test "when a log entry passes the quorum for prepare confirmations it is marked as prepared" do
-    node = %Node{url: "http://localhost-2", public_key: "abc"} |> Repo.insert
+    node = %Node{id: 2, url: "http://localhost-2", public_key: "abc"} |> Repo.insert
     {:ok, log_entry} = LogEntry.create command: "ledger/create", data: "{}"
     
     assert log_entry.prepared == false
@@ -36,7 +61,7 @@ defmodule Hyperledger.LogEntryModelTest do
   end
   
   test "when a log entry is marked as prepared the node adds a commit confirmation" do
-    node = %Node{url: "http://localhost-2", public_key: "abc"} |> Repo.insert
+    node = %Node{id: 2, url: "http://localhost-2", public_key: "abc"} |> Repo.insert
     {:ok, log_entry} = LogEntry.create command: "ledger/create", data: "{}"
 
     assert Repo.all(assoc(log_entry, :commit_confirmations)) == []
@@ -47,7 +72,7 @@ defmodule Hyperledger.LogEntryModelTest do
   end
   
   test "when a log entry passes the quorum for commit confirmations it is marked as committed and executed" do
-    node = %Node{url: "http://localhost-2", public_key: "abc"} |> Repo.insert
+    node = %Node{id: 2, url: "http://localhost-2", public_key: "abc"} |> Repo.insert
     {:ok, data} = %{ledger: %{hash: "123", publicKey: "abc", primaryAccountPublicKey: "cde"}}
                   |> Poison.encode
     {:ok, log_entry} = LogEntry.create command: "ledger/create", data: data
@@ -60,8 +85,8 @@ defmodule Hyperledger.LogEntryModelTest do
     assert Repo.get(LogEntry, log_entry.id).committed == true
   end
   
-  test "log entries executed in order" do
-    node = %Node{url: "http://localhost-2", public_key: "abc"} |> Repo.insert
+  test "log entries are executed in order" do
+    node = %Node{id: 2, url: "http://localhost-2", public_key: "abc"} |> Repo.insert
     {:ok, data_1} = %{ledger: %{hash: "123", publicKey: "abc", primaryAccountPublicKey: "cde"}}
                     |> Poison.encode
     {:ok, data_2} = %{ledger: %{hash: "456", publicKey: "abc", primaryAccountPublicKey: "fgh"}}

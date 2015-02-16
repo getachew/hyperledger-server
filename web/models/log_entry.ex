@@ -26,11 +26,27 @@ defmodule Hyperledger.LogEntry do
   end
   
   def create(command: command, data: data) do
-    Repo.transaction fn -> 
-      log_entry = %LogEntry{command: command, data: data}
-      log_entry = Repo.insert(log_entry)
+    Repo.transaction fn ->
+      id = (Repo.all(LogEntry) |> Enum.count) + 1
+
+      log_entry = %LogEntry{id: id, view: 1, command: command, data: data}
+      log_entry = Repo.insert(log_entry)        
       add_prepare log_entry, signature: "temp_signature", node_id: Node.self_id
       log_entry
+    end
+  end
+  
+  def insert(id: id, view: view, command: command, data: data) do
+    Repo.transaction fn ->
+      node_count = Repo.all(Node) |> Enum.count
+      if Node.self_id != 1 do
+        log_entry = %LogEntry{id: id, view: view, command: command, data: data}
+        log_entry = Repo.insert(log_entry)
+        add_prepare log_entry, signature: "temp_signature", node_id: Node.self_id
+        log_entry
+      else
+        Repo.rollback(:error)
+      end
     end
   end
   
