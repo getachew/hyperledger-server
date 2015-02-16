@@ -10,6 +10,7 @@ defmodule Hyperledger.Router do
     pipe_through :api
 
     resources "/", PageController, only: [:index]
+    resources "/log", LogEntryController, only: [:index, :create]
     resources "/ledgers", LedgerController, only: [:index, :create] do
       resources "/accounts", AccountController, only: [:index, :show, :create]
       resources "/issues", IssueController, only: [:create]
