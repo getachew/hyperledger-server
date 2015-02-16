@@ -12,9 +12,9 @@ defmodule Hyperledger.LogEntry do
   alias Hyperledger.CommitConfirmation
 
   schema "log_entries" do
+    field :view, :integer
     field :command, :string
     field :data, :string
-    field :signature, :string
     field :prepared, :boolean, default: false
     field :committed, :boolean, default: false
     field :executed, :boolean, default: false
