@@ -12,5 +12,6 @@ defmodule Hyperledger.Repo.Migrations.InitalCommitConfirmationsCreate do
   end
 
   def down do
+    drop table(:commit_confirmations)
   end
 end
