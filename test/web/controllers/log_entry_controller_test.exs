@@ -19,8 +19,7 @@ defmodule Hyperledger.LogEntryControllerTest do
   end
   
   test "refuse to create new log when primary" do
-    body = %{logEntry: %{id: 1, view: 1, command: "ledger/create", data: sample_data}}
-    conn = call(Router, :post, "/log", body,
+    conn = call(Router, :post, "/log", log_entry_body,
       headers: [{"content-type", "application/json"}])
 
     assert conn.status == 403
@@ -32,18 +31,20 @@ defmodule Hyperledger.LogEntryControllerTest do
     %Node{id: 2, url: "http://localhost-2", public_key: "abc"}
     |> Repo.insert
     
-    body = %{logEntry: %{id: 1, view: 1, command: "ledger/create", data: sample_data}}
-    conn = call(Router, :post, "/log", body,
+    conn = call(Router, :post, "/log", log_entry_body,
       headers: [{"content-type", "application/json"}])
 
     assert conn.status == 201
     assert Repo.all(LogEntry) |> Enum.count == 1
   end
-  
-  defp sample_data do
-    {:ok, data} = %{ledger: %{hash: "123", publicKey: "abc", primaryAccountPublicKey: "def"}}
-      |> Poison.encode
-    data
+
+  defp log_entry_body(id \\ 1, view \\ 1) do
+    data = %{
+      ledger: %{hash: "123", publicKey: "abc",
+                primaryAccountPublicKey: "def"},
+      prepareConfirmation: %{id: 1, signautre: "abc"}}
+    %{logEntry: %{id: id, view: view, command: "ledger/create",
+                  data: Poison.encode!(data)}}
   end
     
 end
