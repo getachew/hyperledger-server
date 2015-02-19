@@ -24,7 +24,7 @@ defmodule Hyperledger.LogEntry do
     has_many :prepare_confirmations, PrepareConfirmation
     has_many :commit_confirmations, CommitConfirmation
   end
-  
+    
   def create(command: command, data: data) do
     Repo.transaction fn ->
       id = (Repo.all(LogEntry) |> Enum.count) + 1
@@ -36,10 +36,16 @@ defmodule Hyperledger.LogEntry do
     end
   end
   
-  def insert(id: id, view: view, command: command, data: data) do
+  def insert(id: id, view: view, command: command,
+    data: data, prepare_confirmations: prep_confs) do
     Repo.transaction fn ->
-      if Node.self_id != 1 do
-        log_entry = %LogEntry{id: id, view: view, command: command, data: data}
+      prep_confs = Enum.map prep_confs, fn prep_conf ->
+        %PrepareConfirmation{node_id: prep_conf.node_id,
+                             signature: prep_conf.signature}
+      end
+      log_entry = %LogEntry{id: id, view: view, command: command, data: data}
+      prep_ids = Enum.map(prep_confs, &(&1.node_id))
+      if Node.self_id != 1 and (1 in prep_ids) do
         log_entry = Repo.insert(log_entry)
         add_prepare log_entry, signature: "temp_signature", node_id: Node.self_id
         log_entry

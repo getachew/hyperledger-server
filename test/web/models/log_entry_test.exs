@@ -30,14 +30,25 @@ defmodule Hyperledger.LogEntryModelTest do
   end
   
   test "inserting a log entry returns error if node is the primary" do
-    assert {:error, _} = LogEntry.insert id: 1, view: 1, command: "ledger/create", data: sample_ledger_data
+    assert {:error, _} = LogEntry.insert id: 1, view: 1, command: "ledger/create",
+      data: sample_ledger_data, prepare_confirmations: %{}
   end
   
   test "inserting a log entry returns ok if node is not primary" do
     node = insert_node
     System.put_env("NODE_URL", node.url)
 
-    assert {:ok, _} = LogEntry.insert id: 1, view: 1, command: "ledger/create", data: sample_ledger_data
+    assert {:ok, _} = LogEntry.insert(
+      id: 1, view: 1, command: "ledger/create", data: sample_ledger_data,
+      prepare_confirmations: [%{node_id: 1, signature: "temp_signature"}])
+  end
+  
+  test "inserting a log entry without primary signature returns error" do
+    node = insert_node
+    System.put_env("NODE_URL", node.url)
+
+    assert {:error, _} = LogEntry.insert id: 1, view: 1, command: "ledger/create",
+      data: sample_ledger_data, prepare_confirmations: %{}
   end
   
   test "when a log entry passes the quorum for prepare confirmations it is marked as prepared" do
@@ -84,7 +95,6 @@ defmodule Hyperledger.LogEntryModelTest do
     {:ok, log_entry_2} = LogEntry.create command: "ledger/create", data: data_2
     LogEntry.add_prepare(log_entry_1, signature: "temp_signature", node_id: node.id)
     LogEntry.add_prepare(log_entry_2, signature: "temp_signature", node_id: node.id)
-    
     LogEntry.add_commit(log_entry_2, signature: "temp_signature", node_id: node.id)
     
     assert Repo.all(Ledger) |> Enum.count == 0
@@ -117,7 +127,6 @@ defmodule Hyperledger.LogEntryModelTest do
                ledgerHash: "123",
                amount: 100}}
            |> Poison.encode!
-    
     LogEntry.create command: "issue/create", data: data
         
     assert Repo.all(Issue)    |> Enum.count == 1
@@ -134,7 +143,6 @@ defmodule Hyperledger.LogEntryModelTest do
                sourcePublicKey: "cde",
                destinationPublicKey: "def"}}
            |> Poison.encode!
-    
     LogEntry.create command: "transfer/create", data: data
     
     assert Repo.all(Transfer) |> Enum.count == 1
