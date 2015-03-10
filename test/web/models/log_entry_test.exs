@@ -2,6 +2,8 @@ defmodule Hyperledger.LogEntryModelTest do
   use HyperledgerTest.Case
   use Ecto.Model
   
+  import Mock
+  
   alias Hyperledger.Repo
   alias Hyperledger.LogEntry
   alias Hyperledger.Ledger
@@ -27,6 +29,21 @@ defmodule Hyperledger.LogEntryModelTest do
     {:ok, log_entry} = LogEntry.create command: "ledger/create", data: sample_ledger_data
         
     assert Repo.all(assoc(log_entry, :prepare_confirmations)) |> Enum.count == 1
+  end
+  
+  test "creating a log entry broadcasts a prepare to other nodes" do
+    node = insert_node(2)
+    headers = ["Content-Type": "application/json"]
+    body = %{prepare: %{id: 1, view: 1, command: "ledger/create",
+                        data: sample_ledger_data},
+             prepareConfirmations: [%{nodeId: Node.self_id,
+                                      signature: "temp_signature"}]}
+           |> Poison.encode!
+    with_mock HTTPotion,
+    post: fn(_, _) -> %HTTPotion.Response{status_code: 201} end do
+      LogEntry.create command: "ledger/create", data: sample_ledger_data
+      assert(called(HTTPotion.post(node.url, headers: headers, body: body, stream_to: self)))
+    end
   end
   
   test "inserting a log entry returns error if node is the primary" do

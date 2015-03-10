@@ -20,7 +20,7 @@ defmodule Hyperledger.Mixfile do
 
   defp app_list(:dev), do: [:dotenv | app_list]
   defp app_list(_), do: app_list
-  defp app_list, do: [:phoenix, :cowboy, :logger, :postgrex, :ecto, :poison]
+  defp app_list, do: [:phoenix, :cowboy, :logger, :postgrex, :ecto, :poison, :httpotion]
 
   # Specifies your project dependencies
   #
@@ -32,6 +32,9 @@ defmodule Hyperledger.Mixfile do
      {:ecto, "~> 0.8.1"},
      {:relax, "~> 0.0.1"},
      {:dotenv, "~> 0.0.4"},
-     {:uuid, "~> 0.1.5"}]
+     {:uuid, "~> 0.1.5"},
+     {:ibrowse, github: "cmullaparthi/ibrowse", tag: "v4.1.1"},
+     {:httpotion, "~> 2.0.0"},
+     {:mock, "~> 0.1.0"}]
   end
 end

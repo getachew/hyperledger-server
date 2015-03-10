@@ -1,6 +1,8 @@
 defmodule Hyperledger.LogEntry do
   use Ecto.Model
   
+  require Logger
+  
   alias Hyperledger.Repo
   alias Hyperledger.LogEntry
   alias Hyperledger.Ledger
@@ -31,7 +33,8 @@ defmodule Hyperledger.LogEntry do
 
       log_entry = %LogEntry{id: id, view: 1, command: command, data: data}
       log_entry = Repo.insert(log_entry)        
-      add_prepare log_entry, signature: "temp_signature", node_id: Node.self_id
+      add_prepare(log_entry, signature: "temp_signature", node_id: Node.self_id)
+      broadcast(log_entry)
       log_entry
     end
   end
@@ -95,6 +98,22 @@ defmodule Hyperledger.LogEntry do
     end
   end
   
+  def broadcast(log_entry) do
+    Repo.all(Node)
+    |> Enum.reject(fn n -> n.id == Node.self_id end)
+    |> Enum.each fn (node) ->
+         try do
+           HTTPotion.post node.url,
+             headers: ["Content-Type": "application/json"],
+             body: Poison.encode!(prepare_as_json(log_entry)),
+             stream_to: self
+         rescue
+           _ -> Logger.info "Error posting to replica node @ #{node.url}"
+         end
+       end
+  end
+  
+  
   def execute(log_entry) do
     {:ok, params} = Poison.decode(log_entry.data)
     case log_entry.command do
@@ -150,5 +169,15 @@ defmodule Hyperledger.LogEntry do
     end
   end
   
-  
+  def prepare_as_json(log_entry) do
+    pcs = Repo.all(assoc(log_entry, :prepare_confirmations))
+    %{prepare:
+      %{id: log_entry.id,
+        view: log_entry.view,
+        command: log_entry.command,
+        data: log_entry.data},
+      prepareConfirmations: Enum.map(pcs, fn pc ->
+        %{nodeId: pc.node_id, signature: pc.signature}
+      end)}
+  end
 end
