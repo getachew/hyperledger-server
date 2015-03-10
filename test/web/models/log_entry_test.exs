@@ -95,11 +95,15 @@ defmodule Hyperledger.LogEntryModelTest do
     {:ok, log_entry} = LogEntry.create command: "ledger/create", data: sample_ledger_data
     LogEntry.add_prepare(log_entry, signature: "temp_signature", node_id: node.id)
     
-    assert Repo.get(LogEntry, log_entry.id).committed == false
+    log_entry = Repo.get(LogEntry, log_entry.id)
+    assert log_entry.committed == false
 
     LogEntry.add_commit(log_entry, signature: "temp_signature", node_id: node.id)
     
-    assert Repo.get(LogEntry, log_entry.id).committed == true
+    log_entry = Repo.get(LogEntry, log_entry.id)
+    assert log_entry.prepared  == true
+    assert log_entry.committed == true
+    assert log_entry.executed  == true
   end
   
   test "log entries are executed in order" do

@@ -63,14 +63,11 @@ defmodule Hyperledger.LogEntry do
       prep_conf = build(log_entry, :prepare_confirmations)
       %{ prep_conf | signature: signature, node_id: node_id }
       |> Repo.insert
-      
       prep_conf_count = Repo.all(assoc(log_entry, :prepare_confirmations))
                         |> Enum.count
-            
+      
       if (prep_conf_count >= Node.quorum and !log_entry.prepared) do
-        %{ log_entry | prepared: true}
-        |> Repo.update
-        
+        log_entry = %{ log_entry | prepared: true } |> Repo.update
         add_commit(log_entry, signature: "temp_signature", node_id: Node.self_id)
       end
     end
@@ -84,14 +81,12 @@ defmodule Hyperledger.LogEntry do
       
       commit_conf_count = Repo.all(assoc(log_entry, :commit_confirmations))
                           |> Enum.count
-            
+          
       if (commit_conf_count >= Node.quorum and !log_entry.committed) do
-        %{ log_entry | committed: true}
-        |> Repo.update
-        
+        log_entry = %{ log_entry | committed: true} |> Repo.update
         # If previous log entry has been executed then execute
-        prev_log_entry = Repo.get(LogEntry, log_entry.id - 1)
-        if is_nil(prev_log_entry) or prev_log_entry.executed do
+        prev = prev_entry(log_entry)
+        if is_nil(prev) or prev.executed do
           execute(log_entry)
         end
       end
@@ -113,63 +108,72 @@ defmodule Hyperledger.LogEntry do
        end
   end
   
-  
   def execute(log_entry) do
-    {:ok, params} = Poison.decode(log_entry.data)
-    case log_entry.command do
+    Repo.transaction fn ->
+      {:ok, params} = Poison.decode(log_entry.data)
+      case log_entry.command do
       
-      "ledger/create" ->
-        %{"ledger" => %{
-          "hash" => hash,
-          "publicKey" => public_key,
-          "primaryAccountPublicKey" => acc_public_key
-        }} = params
+        "ledger/create" ->
+          %{"ledger" => %{
+            "hash" => hash,
+            "publicKey" => public_key,
+            "primaryAccountPublicKey" => acc_public_key
+          }} = params
         
-        Ledger.create(hash: hash, public_key: public_key,
-          primary_account_public_key: acc_public_key)
+          Ledger.create(hash: hash, public_key: public_key,
+            primary_account_public_key: acc_public_key)
       
-      "account/create" ->
-        %{"account" => %{
-          "ledgerHash" => hash,
-          "publicKey" => public_key
-        }} = params
+        "account/create" ->
+          %{"account" => %{
+            "ledgerHash" => hash,
+            "publicKey" => public_key
+          }} = params
       
-        %Account{ledger_hash: hash, public_key: public_key}
-        |> Repo.insert
+          %Account{ledger_hash: hash, public_key: public_key}
+          |> Repo.insert
         
-      "issue/create" ->
-        %{"issue" => %{
-          "uuid" => uuid,
-          "ledgerHash" => hash,
-          "amount" => amount
-        }} = params
+        "issue/create" ->
+          %{"issue" => %{
+            "uuid" => uuid,
+            "ledgerHash" => hash,
+            "amount" => amount
+          }} = params
       
-        Issue.create(uuid: uuid, ledger_hash: hash, amount: amount)
+          Issue.create(uuid: uuid, ledger_hash: hash, amount: amount)
         
-      "transfer/create" ->
-        %{"transfer" => %{
-          "uuid" => uuid,
-          "amount" => amount,
-          "sourcePublicKey" => source_public_key,
-          "destinationPublicKey" => destination_public_key
-        }} = params
+        "transfer/create" ->
+          %{"transfer" => %{
+            "uuid" => uuid,
+            "amount" => amount,
+            "sourcePublicKey" => source_public_key,
+            "destinationPublicKey" => destination_public_key
+          }} = params
       
-        Transfer.create(
-          uuid: uuid,
-          amount: amount,
-          source_public_key: source_public_key,
-          destination_public_key: destination_public_key)
-    end
+          Transfer.create(
+            uuid: uuid,
+            amount: amount,
+            source_public_key: source_public_key,
+            destination_public_key: destination_public_key)
+      end
     
-    # Mark as executed and check if there's a follow entry to execute
-    # %{ log_entry | executed: true } |> Repo.insert
-    next_entry = Repo.get(LogEntry, log_entry.id + 1)
-    unless is_nil(next_entry) do
-      execute(next_entry)
+      # Mark as executed and check if there's a follow entry to execute
+      %{ log_entry | executed: true } |> Repo.update
+      next = next_entry(log_entry)
+      unless is_nil(next) do
+        execute(next)
+      end
     end
   end
   
-  def prepare_as_json(log_entry) do
+  defp prev_entry(log_entry) do
+    Repo.get(LogEntry, log_entry.id - 1)
+  end
+  
+  defp next_entry(log_entry) do
+    Repo.get(LogEntry, log_entry.id + 1)
+  end
+  
+  defp prepare_as_json(log_entry) do
     pcs = Repo.all(assoc(log_entry, :prepare_confirmations))
     %{prepare:
       %{id: log_entry.id,
