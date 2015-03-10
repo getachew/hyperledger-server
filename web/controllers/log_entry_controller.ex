@@ -12,9 +12,9 @@ defmodule Hyperledger.LogEntryController do
   end
   
   def create(conn, params) do
-    %{"logEntry" => %{"id" => id, "view" => view, "command" => command,
-      "data" => data, "prepareConfirmations" => prep_confs}} = params
-      
+    %{"logEntry" =>
+      %{"id" => id, "view" => view, "command" => command, "data" => data}} = params
+    %{"prepareConfirmations" => prep_confs} = params
     prep_confs = Enum.map prep_confs, fn pc ->
       %{node_id: pc["nodeId"], signature: pc["signature"]}
     end
