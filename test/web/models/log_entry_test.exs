@@ -42,7 +42,8 @@ defmodule Hyperledger.LogEntryModelTest do
     with_mock HTTPotion,
     post: fn(_, _) -> %HTTPotion.Response{status_code: 201} end do
       LogEntry.create command: "ledger/create", data: sample_ledger_data
-      assert(called(HTTPotion.post(node.url, headers: headers, body: body, stream_to: self)))
+      assert(called(HTTPotion.post("#{node.url}/log",
+        headers: headers, body: body, stream_to: self)))
     end
   end
   

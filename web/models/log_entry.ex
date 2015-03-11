@@ -98,7 +98,7 @@ defmodule Hyperledger.LogEntry do
     |> Enum.reject(fn n -> n.id == Node.self_id end)
     |> Enum.each fn (node) ->
          try do
-           HTTPotion.post node.url,
+           HTTPotion.post "#{node.url}/log",
              headers: ["Content-Type": "application/json"],
              body: Poison.encode!(prepare_as_json(log_entry)),
              stream_to: self
