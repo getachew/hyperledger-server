@@ -11,6 +11,7 @@ defmodule Hyperledger.LogEntryModelTest do
   alias Hyperledger.Issue
   alias Hyperledger.Transfer
   alias Hyperledger.Node
+  alias Hyperledger.PrepareConfirmation
   
   setup do
     node = insert_node(1)
@@ -67,6 +68,17 @@ defmodule Hyperledger.LogEntryModelTest do
 
     assert {:error, _} = LogEntry.insert id: 1, view: 1, command: "ledger/create",
       data: sample_ledger_data, prepare_confirmations: %{}
+  end
+  
+  test "inserting a log entry saves the confirmations and appends its own" do
+    node = insert_node
+    System.put_env("NODE_URL", node.url)
+
+    LogEntry.insert id: 1, view: 1, command: "ledger/create",
+      data: sample_ledger_data, prepare_confirmations: [%{
+        node_id: 1, signature: "temp_signature"}]
+    
+    assert Repo.all(PrepareConfirmation) |> Enum.count == 2
   end
   
   test "when a log entry passes the quorum for prepare confirmations it is marked as prepared" do

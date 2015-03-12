@@ -42,14 +42,15 @@ defmodule Hyperledger.LogEntry do
   def insert(id: id, view: view, command: command,
     data: data, prepare_confirmations: prep_confs) do
     Repo.transaction fn ->
-      prep_confs = Enum.map prep_confs, fn prep_conf ->
-        %PrepareConfirmation{node_id: prep_conf.node_id,
-                             signature: prep_conf.signature}
-      end
       log_entry = %LogEntry{id: id, view: view, command: command, data: data}
+      prep_confs = Enum.map prep_confs, fn prep_conf ->
+        pc = build(log_entry, :prepare_confirmations)
+        %{ pc | node_id: prep_conf.node_id, signature: prep_conf.signature}
+      end
       prep_ids = Enum.map(prep_confs, &(&1.node_id))
       if Node.self_id != 1 and (1 in prep_ids) do
         log_entry = Repo.insert(log_entry)
+        prep_confs |> Enum.map(&(Repo.insert(&1)))
         add_prepare log_entry, signature: "temp_signature", node_id: Node.self_id
         log_entry
       else
@@ -100,7 +101,7 @@ defmodule Hyperledger.LogEntry do
          try do
            HTTPotion.post "#{node.url}/log",
              headers: ["Content-Type": "application/json"],
-             body: Poison.encode!(prepare_as_json(log_entry)),
+             body: Poison.encode!(as_json(log_entry)),
              stream_to: self
          rescue
            _ -> Logger.info "Error posting to replica node @ #{node.url}"
@@ -173,7 +174,7 @@ defmodule Hyperledger.LogEntry do
     Repo.get(LogEntry, log_entry.id + 1)
   end
   
-  defp prepare_as_json(log_entry) do
+  defp as_json(log_entry) do
     pcs = Repo.all(assoc(log_entry, :prepare_confirmations))
     %{logEntry:
       %{id: log_entry.id,
