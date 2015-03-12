@@ -175,7 +175,7 @@ defmodule Hyperledger.LogEntry do
   
   defp prepare_as_json(log_entry) do
     pcs = Repo.all(assoc(log_entry, :prepare_confirmations))
-    %{prepare:
+    %{logEntry:
       %{id: log_entry.id,
         view: log_entry.view,
         command: log_entry.command,

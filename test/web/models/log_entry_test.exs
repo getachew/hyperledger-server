@@ -34,8 +34,8 @@ defmodule Hyperledger.LogEntryModelTest do
   test "creating a log entry broadcasts a prepare to other nodes" do
     node = insert_node(2)
     headers = ["Content-Type": "application/json"]
-    body = %{prepare: %{id: 1, view: 1, command: "ledger/create",
-                        data: sample_ledger_data},
+    body = %{logEntry: %{id: 1, view: 1, command: "ledger/create",
+                         data: sample_ledger_data},
              prepareConfirmations: [%{nodeId: Node.self_id,
                                       signature: "temp_signature"}]}
            |> Poison.encode!
