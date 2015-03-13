@@ -77,9 +77,7 @@ defmodule Hyperledger.LogEntryModelTest do
   end
   
   test "a log entry marked as prepared broadcasts a commit to other nodes" do
-    initial_node_url = System.get_env("NODE_URL")
     node = insert_node(2)
-    System.put_env("NODE_URL", node.url)
     
     headers = ["Content-Type": "application/json"]
     body = %{logEntry: %{id: 1, view: 1, command: "ledger/create",
@@ -88,15 +86,17 @@ defmodule Hyperledger.LogEntryModelTest do
                %{nodeId: 1, signature: "temp_signature"},
                %{nodeId: 2, signature: "temp_signature"}],
              commitConfirmations: [
-               %{nodeId: 2, signature: "temp_signature"}]}
+               %{nodeId: 1, signature: "temp_signature"}]}
            |> Poison.encode!
     with_mock HTTPotion,
     post: fn(_, _) -> %HTTPotion.Response{status_code: 201} end do
+      LogEntry.create command: "ledger/create", data: sample_ledger_data
+      
       LogEntry.insert id: 1, view: 1, command: "ledger/create", data: sample_ledger_data,
-        prepare_confirmations: [%{node_id: 1, signature: "temp_signature"}],
+        prepare_confirmations: [%{node_id: 2, signature: "temp_signature"}],
         commit_confirmations: []
             
-      assert(called(HTTPotion.post("#{initial_node_url}/log",
+      assert(called(HTTPotion.post("#{node.url}/log",
         headers: headers, body: body, stream_to: self)))
     end
   end

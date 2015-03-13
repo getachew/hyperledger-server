@@ -58,7 +58,7 @@ defmodule Hyperledger.LogEntry do
           |> Enum.each(&(add_commit(log_entry, signature: &1.signature, node_id: &1.node_id)))
           broadcast(log_entry)
           log_entry
-
+          
         # Node is primary
         Node.self_id == 1 ->      
           case Repo.get(LogEntry, id) do
@@ -96,6 +96,7 @@ defmodule Hyperledger.LogEntry do
       if (prep_conf_count >= Node.quorum and !log_entry.prepared) do
         log_entry = %{ log_entry | prepared: true } |> Repo.update
         add_commit(log_entry, signature: "temp_signature", node_id: Node.self_id)
+        broadcast(log_entry)
       end
     end
   end
