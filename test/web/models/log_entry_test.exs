@@ -12,6 +12,7 @@ defmodule Hyperledger.LogEntryModelTest do
   alias Hyperledger.Transfer
   alias Hyperledger.Node
   alias Hyperledger.PrepareConfirmation
+  alias Hyperledger.CommitConfirmation
   
   setup do
     node = insert_node(1)
@@ -66,8 +67,9 @@ defmodule Hyperledger.LogEntryModelTest do
     with_mock HTTPotion,
     post: fn(_, _) -> %HTTPotion.Response{status_code: 201}
     end do
-      LogEntry.insert id: 1, view: 1, command: "ledger/create",
-        data: sample_ledger_data, prepare_confirmations: [%{node_id: 1, signature: "temp_signature"}]
+      LogEntry.insert id: 1, view: 1, command: "ledger/create", data: sample_ledger_data,
+        prepare_confirmations: [%{node_id: 1, signature: "temp_signature"}],
+        commit_confirmations: []
       
       assert(called(HTTPotion.post("#{inital_node_url}/log",
         headers: headers, body: body, stream_to: self)))
@@ -90,18 +92,33 @@ defmodule Hyperledger.LogEntryModelTest do
            |> Poison.encode!
     with_mock HTTPotion,
     post: fn(_, _) -> %HTTPotion.Response{status_code: 201} end do
-      LogEntry.insert id: 1, view: 1, command: "ledger/create",
-        data: sample_ledger_data, prepare_confirmations: [
-          %{node_id: 1, signature: "temp_signature"}]
-      
+      LogEntry.insert id: 1, view: 1, command: "ledger/create", data: sample_ledger_data,
+        prepare_confirmations: [%{node_id: 1, signature: "temp_signature"}],
+        commit_confirmations: []
+            
       assert(called(HTTPotion.post("#{initial_node_url}/log",
         headers: headers, body: body, stream_to: self)))
     end
   end
   
+  test "commit confirmations are appended to the record and become marked as committed" do
+    insert_node(2)
+    LogEntry.create command: "ledger/create", data: sample_ledger_data
+    LogEntry.insert id: 1, view: 1, command: "ledger/create",
+      data: sample_ledger_data, prepare_confirmations: [
+        %{node_id: 2, signature: "temp_signature"}], commit_confirmations: []
+    
+    LogEntry.insert id: 1, view: 1, command: "ledger/create",
+      data: sample_ledger_data, prepare_confirmations: [],
+      commit_confirmations: [%{node_id: 2, signature: "temp_signature"}]
+
+    assert Repo.all(CommitConfirmation) |> Enum.count == 2
+    assert Repo.get(LogEntry, 1).committed
+  end
+  
   test "inserting a log entry returns error if primary has no existing record" do
     assert {:error, _} = LogEntry.insert id: 1, view: 1, command: "ledger/create",
-      data: sample_ledger_data, prepare_confirmations: []
+      data: sample_ledger_data, prepare_confirmations: [], commit_confirmations: []
   end
   
   test "inserting a log entry returns ok if primary has record which matches" do
@@ -109,7 +126,8 @@ defmodule Hyperledger.LogEntryModelTest do
     assert {:ok, _} = LogEntry.insert(
       id: 1, view: 1, command: "ledger/create", data: sample_ledger_data,
       prepare_confirmations: [%{node_id: 1, signature: "temp_signature"},
-                              %{node_id: 2, signature: "temp_signature"}])
+                              %{node_id: 2, signature: "temp_signature"}],
+      commit_confirmations: [])
     assert Repo.all(PrepareConfirmation) |> Enum.count == 2
     assert Repo.get(LogEntry, 1).prepared == true
   end
@@ -120,7 +138,8 @@ defmodule Hyperledger.LogEntryModelTest do
 
     assert {:ok, _} = LogEntry.insert(
       id: 1, view: 1, command: "ledger/create", data: sample_ledger_data,
-      prepare_confirmations: [%{node_id: 1, signature: "temp_signature"}])
+      prepare_confirmations: [%{node_id: 1, signature: "temp_signature"}],
+      commit_confirmations: [])
   end
   
   test "inserting a log entry without primary signature returns error" do
@@ -128,7 +147,7 @@ defmodule Hyperledger.LogEntryModelTest do
     System.put_env("NODE_URL", node.url)
 
     assert {:error, _} = LogEntry.insert id: 1, view: 1, command: "ledger/create",
-      data: sample_ledger_data, prepare_confirmations: %{}
+      data: sample_ledger_data, prepare_confirmations: [], commit_confirmations: []
   end
   
   test "inserting a log entry saves the confirmations and appends its own" do
@@ -137,7 +156,7 @@ defmodule Hyperledger.LogEntryModelTest do
 
     LogEntry.insert id: 1, view: 1, command: "ledger/create",
       data: sample_ledger_data, prepare_confirmations: [%{
-        node_id: 1, signature: "temp_signature"}]
+        node_id: 1, signature: "temp_signature"}], commit_confirmations: []
     
     assert Repo.all(PrepareConfirmation) |> Enum.count == 2
   end

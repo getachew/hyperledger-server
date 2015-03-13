@@ -39,8 +39,8 @@ defmodule Hyperledger.LogEntry do
     end
   end
   
-  def insert(id: id, view: view, command: command,
-    data: data, prepare_confirmations: prep_confs) do
+  def insert(id: id, view: view, command: command, data: data,
+    prepare_confirmations: prep_confs, commit_confirmations: commit_confs) do
     Repo.transaction fn ->
       log_entry = %LogEntry{id: id, view: view, command: command, data: data}
       prep_ids = Enum.map(prep_confs, &(&1.node_id))
@@ -49,9 +49,13 @@ defmodule Hyperledger.LogEntry do
         # If the node is a replica and the log has a prepare from the primary
         Node.self_id != 1 and (1 in prep_ids) ->
           log_entry = Repo.insert(log_entry)
+          # Prepares
           [%{node_id: Node.self_id, signature: "temp_signature"}]
           |> Enum.into(prep_confs)
           |> Enum.each(&(add_prepare(log_entry, signature: &1.signature, node_id: &1.node_id)))
+          # Commits
+          commit_confs
+          |> Enum.each(&(add_commit(log_entry, signature: &1.signature, node_id: &1.node_id)))
           broadcast(log_entry)
           log_entry
 
@@ -61,11 +65,19 @@ defmodule Hyperledger.LogEntry do
             nil ->
               Repo.rollback(:error)
             log_entry ->
+              # Prepares
               pc_node_ids = Repo.all(assoc(log_entry, :prepare_confirmations))
                             |> Enum.map &(&1.node_id)
               prep_confs
               |> Enum.reject(&(&1.node_id in pc_node_ids))
               |> Enum.each &(add_prepare(log_entry, signature: &1.signature, node_id: &1.node_id))
+              
+              # Commits
+              cc_node_ids = Repo.all(assoc(log_entry, :commit_confirmations))
+                            |> Enum.map &(&1.node_id)
+              commit_confs
+              |> Enum.reject(&(&1.node_id in cc_node_ids))
+              |> Enum.each &(add_commit(log_entry, signature: &1.signature, node_id: &1.node_id))
           end
         true ->
           Repo.rollback(:error)
