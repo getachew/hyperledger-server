@@ -1,5 +1,5 @@
 defmodule Hyperledger.PageController do
-  use Phoenix.Controller
+  use Hyperledger.Web, :controller
 
   plug :action
   

@@ -1,3 +1,3 @@
 defmodule Hyperledger.LayoutView do
-  use Hyperledger.View
+  use Hyperledger.Web, :view
 end

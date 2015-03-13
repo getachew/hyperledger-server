@@ -1,5 +1,5 @@
 defmodule Hyperledger.LedgerView do
-  use Hyperledger.View
+  use Hyperledger.Web, :view
   
   def render("index.json", %{ledgers: ledgers}) do
     %{

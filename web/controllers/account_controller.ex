@@ -1,5 +1,5 @@
 defmodule Hyperledger.AccountController do
-  use Phoenix.Controller
+  use Hyperledger.Web, :controller
   use Ecto.Model
   
   alias Hyperledger.Repo

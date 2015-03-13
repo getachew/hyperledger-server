@@ -1,5 +1,5 @@
 defmodule Hyperledger.LogEntryView do
-  use Hyperledger.View
+  use Hyperledger.Web, :view
   
   def render("index.json", %{entries: entries}) do
     %{

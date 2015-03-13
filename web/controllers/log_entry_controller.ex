@@ -1,5 +1,5 @@
 defmodule Hyperledger.LogEntryController do
-  use Phoenix.Controller
+  use Hyperledger.Web, :controller
   
   alias Hyperledger.Repo
   alias Hyperledger.LogEntry

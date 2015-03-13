@@ -1,5 +1,5 @@
 defmodule Hyperledger.ErrorView do
-  use Hyperledger.View
+  use Hyperledger.Web, :view
 
   def render("404.html", _assigns) do
     "Page not found - 404"
