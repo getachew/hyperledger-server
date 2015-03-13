@@ -37,7 +37,8 @@ defmodule Hyperledger.LogEntryModelTest do
     headers = ["Content-Type": "application/json"]
     body = %{logEntry: %{id: 1, view: 1, command: "ledger/create",
                          data: sample_ledger_data},
-             prepareConfirmations: [%{nodeId: 1, signature: "temp_signature"}]}
+             prepareConfirmations: [%{nodeId: 1, signature: "temp_signature"}],
+             commitConfirmations: []}
            |> Poison.encode!
     with_mock HTTPotion,
     post: fn(_, _) -> %HTTPotion.Response{status_code: 201} end do
@@ -52,21 +53,48 @@ defmodule Hyperledger.LogEntryModelTest do
     inital_node_url = System.get_env("NODE_URL")
     node = insert_node(2)
     System.put_env("NODE_URL", node.url)
+    insert_node(3)
     
     headers = ["Content-Type": "application/json"]
     body = %{logEntry: %{id: 1, view: 1, command: "ledger/create",
                          data: sample_ledger_data},
              prepareConfirmations: [
                %{nodeId: 1, signature: "temp_signature"},
-               %{nodeId: 2, signature: "temp_signature"}]}
+               %{nodeId: 2, signature: "temp_signature"}],
+             commitConfirmations: []}
            |> Poison.encode!
     with_mock HTTPotion,
-    post: fn(_, _) -> %HTTPotion.Response{status_code: 201} end do
-
+    post: fn(_, _) -> %HTTPotion.Response{status_code: 201}
+    end do
       LogEntry.insert id: 1, view: 1, command: "ledger/create",
         data: sample_ledger_data, prepare_confirmations: [%{node_id: 1, signature: "temp_signature"}]
       
       assert(called(HTTPotion.post("#{inital_node_url}/log",
+        headers: headers, body: body, stream_to: self)))
+    end
+  end
+  
+  test "a log entry marked as prepared broadcasts a commit to other nodes" do
+    initial_node_url = System.get_env("NODE_URL")
+    node = insert_node(2)
+    System.put_env("NODE_URL", node.url)
+    
+    headers = ["Content-Type": "application/json"]
+    body = %{logEntry: %{id: 1, view: 1, command: "ledger/create",
+                         data: sample_ledger_data},
+             prepareConfirmations: [
+               %{nodeId: 1, signature: "temp_signature"},
+               %{nodeId: 2, signature: "temp_signature"}],
+             commitConfirmations: [
+               %{nodeId: 2, signature: "temp_signature"}]}
+           |> Poison.encode!
+    with_mock HTTPotion,
+    post: fn(_, _) -> %HTTPotion.Response{status_code: 201} end do
+      LogEntry.insert id: 1, view: 1, command: "ledger/create",
+        data: sample_ledger_data, prepare_confirmations: [
+          %{node_id: 1, signature: "temp_signature"}]
+      
+      assert(called(HTTPotion.post("#{initial_node_url}/log",
         headers: headers, body: body, stream_to: self)))
     end
   end

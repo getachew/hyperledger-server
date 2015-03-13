@@ -190,12 +190,16 @@ defmodule Hyperledger.LogEntry do
   
   defp as_json(log_entry) do
     pcs = Repo.all(assoc(log_entry, :prepare_confirmations))
+    ccs = Repo.all(assoc(log_entry, :commit_confirmations))
     %{logEntry:
       %{id: log_entry.id,
         view: log_entry.view,
         command: log_entry.command,
         data: log_entry.data},
       prepareConfirmations: Enum.map(pcs, fn pc ->
+        %{nodeId: pc.node_id, signature: pc.signature}
+      end),
+      commitConfirmations: Enum.map(ccs, fn pc ->
         %{nodeId: pc.node_id, signature: pc.signature}
       end)}
   end
