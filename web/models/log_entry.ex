@@ -43,18 +43,15 @@ defmodule Hyperledger.LogEntry do
     data: data, prepare_confirmations: prep_confs) do
     Repo.transaction fn ->
       log_entry = %LogEntry{id: id, view: view, command: command, data: data}
-      prep_confs = Enum.map prep_confs, fn prep_conf ->
-        pc = build(log_entry, :prepare_confirmations)
-        %{ pc | node_id: prep_conf.node_id, signature: prep_conf.signature}
-      end
       prep_ids = Enum.map(prep_confs, &(&1.node_id))
       
       cond do
         # If the node is a replica and the log has a prepare from the primary
         Node.self_id != 1 and (1 in prep_ids) ->
           log_entry = Repo.insert(log_entry)
-          prep_confs |> Enum.map(&(Repo.insert(&1)))
-          add_prepare(log_entry, signature: "temp_signature", node_id: Node.self_id)
+          [%{node_id: Node.self_id, signature: "temp_signature"}]
+          |> Enum.into(prep_confs)
+          |> Enum.each(&(add_prepare(log_entry, signature: &1.signature, node_id: &1.node_id)))
           broadcast(log_entry)
           log_entry
 
@@ -68,7 +65,7 @@ defmodule Hyperledger.LogEntry do
                             |> Enum.map &(&1.node_id)
               prep_confs
               |> Enum.reject(&(&1.node_id in pc_node_ids))
-              |> Enum.map &(Repo.insert(&1))
+              |> Enum.each &(add_prepare(log_entry, signature: &1.signature, node_id: &1.node_id))
           end
         true ->
           Repo.rollback(:error)

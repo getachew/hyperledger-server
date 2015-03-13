@@ -83,6 +83,7 @@ defmodule Hyperledger.LogEntryModelTest do
       prepare_confirmations: [%{node_id: 1, signature: "temp_signature"},
                               %{node_id: 2, signature: "temp_signature"}])
     assert Repo.all(PrepareConfirmation) |> Enum.count == 2
+    assert Repo.get(LogEntry, 1).prepared == true
   end
     
   test "inserting a log entry returns ok if node is not primary" do
