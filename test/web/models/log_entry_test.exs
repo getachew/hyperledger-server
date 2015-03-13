@@ -71,11 +71,20 @@ defmodule Hyperledger.LogEntryModelTest do
     end
   end
   
-  test "inserting a log entry returns error if node is the primary" do
+  test "inserting a log entry returns error if primary has no existing record" do
     assert {:error, _} = LogEntry.insert id: 1, view: 1, command: "ledger/create",
       data: sample_ledger_data, prepare_confirmations: []
   end
   
+  test "inserting a log entry returns ok if primary has record which matches" do
+    LogEntry.create command: "ledger/create", data: sample_ledger_data
+    assert {:ok, _} = LogEntry.insert(
+      id: 1, view: 1, command: "ledger/create", data: sample_ledger_data,
+      prepare_confirmations: [%{node_id: 1, signature: "temp_signature"},
+                              %{node_id: 2, signature: "temp_signature"}])
+    assert Repo.all(PrepareConfirmation) |> Enum.count == 2
+  end
+    
   test "inserting a log entry returns ok if node is not primary" do
     node = insert_node
     System.put_env("NODE_URL", node.url)
