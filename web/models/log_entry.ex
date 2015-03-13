@@ -51,7 +51,8 @@ defmodule Hyperledger.LogEntry do
       if Node.self_id != 1 and (1 in prep_ids) do
         log_entry = Repo.insert(log_entry)
         prep_confs |> Enum.map(&(Repo.insert(&1)))
-        add_prepare log_entry, signature: "temp_signature", node_id: Node.self_id
+        add_prepare(log_entry, signature: "temp_signature", node_id: Node.self_id)
+        broadcast(log_entry)
         log_entry
       else
         Repo.rollback(:error)

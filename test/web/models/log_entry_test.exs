@@ -37,20 +37,43 @@ defmodule Hyperledger.LogEntryModelTest do
     headers = ["Content-Type": "application/json"]
     body = %{logEntry: %{id: 1, view: 1, command: "ledger/create",
                          data: sample_ledger_data},
-             prepareConfirmations: [%{nodeId: Node.self_id,
-                                      signature: "temp_signature"}]}
+             prepareConfirmations: [%{nodeId: 1, signature: "temp_signature"}]}
            |> Poison.encode!
     with_mock HTTPotion,
     post: fn(_, _) -> %HTTPotion.Response{status_code: 201} end do
       LogEntry.create command: "ledger/create", data: sample_ledger_data
+      
       assert(called(HTTPotion.post("#{node.url}/log",
+        headers: headers, body: body, stream_to: self)))
+    end
+  end
+  
+  test "inserting a log entry broadcasts a prepare to other nodes" do
+    inital_node_url = System.get_env("NODE_URL")
+    node = insert_node(2)
+    System.put_env("NODE_URL", node.url)
+    
+    headers = ["Content-Type": "application/json"]
+    body = %{logEntry: %{id: 1, view: 1, command: "ledger/create",
+                         data: sample_ledger_data},
+             prepareConfirmations: [
+               %{nodeId: 1, signature: "temp_signature"},
+               %{nodeId: 2, signature: "temp_signature"}]}
+           |> Poison.encode!
+    with_mock HTTPotion,
+    post: fn(_, _) -> %HTTPotion.Response{status_code: 201} end do
+
+      LogEntry.insert id: 1, view: 1, command: "ledger/create",
+        data: sample_ledger_data, prepare_confirmations: [%{node_id: 1, signature: "temp_signature"}]
+      
+      assert(called(HTTPotion.post("#{inital_node_url}/log",
         headers: headers, body: body, stream_to: self)))
     end
   end
   
   test "inserting a log entry returns error if node is the primary" do
     assert {:error, _} = LogEntry.insert id: 1, view: 1, command: "ledger/create",
-      data: sample_ledger_data, prepare_confirmations: %{}
+      data: sample_ledger_data, prepare_confirmations: []
   end
   
   test "inserting a log entry returns ok if node is not primary" do
