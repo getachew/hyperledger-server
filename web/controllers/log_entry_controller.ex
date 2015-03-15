@@ -19,7 +19,7 @@ defmodule Hyperledger.LogEntryController do
     prep_confs = Enum.map prep_confs, fn pc ->
       %{node_id: pc["nodeId"], signature: pc["signature"]}
     end
-    commit_confs = Enum.map prep_confs, fn cc ->
+    commit_confs = Enum.map commit_confs, fn cc ->
       %{node_id: cc["nodeId"], signature: cc["signature"]}
     end
       
