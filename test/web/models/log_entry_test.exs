@@ -10,13 +10,11 @@ defmodule Hyperledger.LogEntryModelTest do
   alias Hyperledger.Account
   alias Hyperledger.Issue
   alias Hyperledger.Transfer
-  alias Hyperledger.Node
   alias Hyperledger.PrepareConfirmation
   alias Hyperledger.CommitConfirmation
   
   setup do
-    node = insert_node(1)
-    System.put_env("NODE_URL", node.url)
+    create_primary
     :ok
   end
   
@@ -34,7 +32,7 @@ defmodule Hyperledger.LogEntryModelTest do
   end
   
   test "creating a log entry broadcasts a prepare to other nodes" do
-    node = insert_node(2)
+    node = create_node(2)
     headers = ["Content-Type": "application/json"]
     body = %{logEntry: %{id: 1, view: 1, command: "ledger/create",
                          data: sample_ledger_data},
@@ -52,9 +50,9 @@ defmodule Hyperledger.LogEntryModelTest do
   
   test "inserting a log entry broadcasts a prepare to other nodes" do
     inital_node_url = System.get_env("NODE_URL")
-    node = insert_node(2)
+    node = create_node(2)
     System.put_env("NODE_URL", node.url)
-    insert_node(3)
+    create_node(3)
     
     headers = ["Content-Type": "application/json"]
     body = %{logEntry: %{id: 1, view: 1, command: "ledger/create",
@@ -77,7 +75,7 @@ defmodule Hyperledger.LogEntryModelTest do
   end
   
   test "a log entry marked as prepared broadcasts a commit to other nodes" do
-    node = insert_node(2)
+    node = create_node(2)
     
     headers = ["Content-Type": "application/json"]
     body = %{logEntry: %{id: 1, view: 1, command: "ledger/create",
@@ -102,7 +100,7 @@ defmodule Hyperledger.LogEntryModelTest do
   end
   
   test "commit confirmations are appended to the record and become marked as committed" do
-    insert_node(2)
+    create_node(2)
     LogEntry.create command: "ledger/create", data: sample_ledger_data
     LogEntry.insert id: 1, view: 1, command: "ledger/create",
       data: sample_ledger_data, prepare_confirmations: [
@@ -133,7 +131,7 @@ defmodule Hyperledger.LogEntryModelTest do
   end
     
   test "inserting a log entry returns ok if node is not primary" do
-    node = insert_node
+    node = create_node(2)
     System.put_env("NODE_URL", node.url)
 
     assert {:ok, _} = LogEntry.insert(
@@ -143,7 +141,7 @@ defmodule Hyperledger.LogEntryModelTest do
   end
   
   test "inserting a log entry without primary signature returns error" do
-    node = insert_node
+    node = create_node(2)
     System.put_env("NODE_URL", node.url)
 
     assert {:error, _} = LogEntry.insert id: 1, view: 1, command: "ledger/create",
@@ -151,7 +149,7 @@ defmodule Hyperledger.LogEntryModelTest do
   end
   
   test "inserting a log entry saves the confirmations and appends its own" do
-    node = insert_node
+    node = create_node(2)
     System.put_env("NODE_URL", node.url)
 
     LogEntry.insert id: 1, view: 1, command: "ledger/create",
@@ -162,7 +160,7 @@ defmodule Hyperledger.LogEntryModelTest do
   end
   
   test "when a log entry passes the quorum for prepare confirmations it is marked as prepared" do
-    node = insert_node
+    node = create_node(2)
     {:ok, log_entry} = LogEntry.create command: "ledger/create", data: sample_ledger_data
     
     assert log_entry.prepared == false
@@ -173,7 +171,7 @@ defmodule Hyperledger.LogEntryModelTest do
   end
   
   test "when a log entry is marked as prepared the node adds a commit confirmation" do
-    node = insert_node
+    node = create_node(2)
     {:ok, log_entry} = LogEntry.create command: "ledger/create", data: sample_ledger_data
 
     assert Repo.all(assoc(log_entry, :commit_confirmations)) == []
@@ -184,7 +182,7 @@ defmodule Hyperledger.LogEntryModelTest do
   end
   
   test "when a log entry passes the quorum for commit confirmations it is marked as committed and executed" do
-    node = insert_node
+    node = create_node(2)
     {:ok, log_entry} = LogEntry.create command: "ledger/create", data: sample_ledger_data
     LogEntry.add_prepare(log_entry, signature: "temp_signature", node_id: node.id)
     
@@ -200,7 +198,7 @@ defmodule Hyperledger.LogEntryModelTest do
   end
   
   test "log entries are executed in order" do
-    node = insert_node
+    node = create_node(2)
     data_1 = %{ledger: %{hash: "123", publicKey: "abc", primaryAccountPublicKey: "cde"}}
              |> Poison.encode!
     data_2 = %{ledger: %{hash: "456", publicKey: "abc", primaryAccountPublicKey: "fgh"}}
@@ -268,10 +266,4 @@ defmodule Hyperledger.LogEntryModelTest do
     %{ledger: %{hash: "123", publicKey: "abc", primaryAccountPublicKey: "cde"}}
     |> Poison.encode!
   end
-  
-  defp insert_node(n \\ 2)  do
-    %Node{id: n, url: "http://localhost-#{n}", public_key: "abc"}
-    |> Repo.insert
-  end
-  
 end

@@ -3,13 +3,11 @@ defmodule Hyperledger.LogEntryControllerTest do
     
   alias Hyperledger.Router
   alias Hyperledger.Repo
-  alias Hyperledger.Node
   alias Hyperledger.LogEntry
   
   setup do
-    System.put_env("NODE_URL", "http://localhost")
-    %Node{id: 1, url: "http://localhost", public_key: "abc"}
-    |> Repo.insert
+    primary = create_node(1)
+    System.put_env("NODE_URL", primary.url)
     :ok
   end
   
@@ -27,9 +25,8 @@ defmodule Hyperledger.LogEntryControllerTest do
   end
   
   test "accept log when replica" do
-    System.put_env("NODE_URL", "http://localhost-2")
-    %Node{id: 2, url: "http://localhost-2", public_key: "abc"}
-    |> Repo.insert
+    node = create_node(2)
+    System.put_env("NODE_URL", node.url)
     
     conn = call(Router, :post, "/log", log_entry_body,
       headers: [{"content-type", "application/json"}])

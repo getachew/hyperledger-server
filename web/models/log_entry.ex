@@ -33,7 +33,7 @@ defmodule Hyperledger.LogEntry do
 
       log_entry = %LogEntry{id: id, view: 1, command: command, data: data}
       log_entry = Repo.insert(log_entry)        
-      add_prepare(log_entry, signature: "temp_signature", node_id: Node.self_id)
+      add_prepare(log_entry, signature: "temp_signature", node_id: Node.self.id)
       broadcast(log_entry)
       log_entry
     end
@@ -47,10 +47,10 @@ defmodule Hyperledger.LogEntry do
       
       cond do
         # If the node is a replica and the log has a prepare from the primary
-        Node.self_id != 1 and (1 in prep_ids) ->
+        Node.self.id != 1 and (1 in prep_ids) ->
           log_entry = Repo.insert(log_entry)
           # Prepares
-          [%{node_id: Node.self_id, signature: "temp_signature"}]
+          [%{node_id: Node.self.id, signature: "temp_signature"}]
           |> Enum.into(prep_confs)
           |> Enum.each(&(add_prepare(log_entry, signature: &1.signature, node_id: &1.node_id)))
           # Commits
@@ -60,7 +60,7 @@ defmodule Hyperledger.LogEntry do
           log_entry
           
         # Node is primary
-        Node.self_id == 1 ->      
+        Node.self.id == 1 ->      
           case Repo.get(LogEntry, id) do
             nil ->
               Repo.rollback(:error)
@@ -95,7 +95,7 @@ defmodule Hyperledger.LogEntry do
       
       if (prep_conf_count >= Node.quorum and !log_entry.prepared) do
         log_entry = %{ log_entry | prepared: true } |> Repo.update
-        add_commit(log_entry, signature: "temp_signature", node_id: Node.self_id)
+        add_commit(log_entry, signature: "temp_signature", node_id: Node.self.id)
         broadcast(log_entry)
       end
     end
@@ -123,7 +123,7 @@ defmodule Hyperledger.LogEntry do
   
   def broadcast(log_entry) do
     Repo.all(Node)
-    |> Enum.reject(fn n -> n.id == Node.self_id end)
+    |> Enum.reject(fn n -> n.id == Node.self.id end)
     |> Enum.each fn (node) ->
          try do
            HTTPotion.post "#{node.url}/log",

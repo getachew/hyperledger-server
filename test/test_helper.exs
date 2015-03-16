@@ -10,11 +10,13 @@ defmodule HyperledgerTest.Case do
   
   alias Ecto.Adapters.SQL
   alias Hyperledger.Repo
+  alias Hyperledger.Node
 
   setup do
     SQL.begin_test_transaction(Repo)
     on_exit fn ->
       SQL.rollback_test_transaction(Repo)
+      System.delete_env("NODE_URL")
     end
   end
 
@@ -28,5 +30,13 @@ defmodule HyperledgerTest.Case do
     conn = conn(verb, path, params, headers) |> Plug.Conn.fetch_params
     router.call(conn, router.init([]))
   end
-
+  
+  def create_node(n) do
+    Node.create n, "http://localhost-#{n}", "#{n}"
+  end
+  
+  def create_primary do
+    primary = create_node(1)
+    System.put_env("NODE_URL", primary.url)
+  end
 end

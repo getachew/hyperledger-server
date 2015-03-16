@@ -3,14 +3,12 @@ defmodule Hyperledger.LedgerControllerTest do
     
   alias Hyperledger.Router
   alias Hyperledger.Repo
-  alias Hyperledger.Node
   alias Hyperledger.LogEntry
   alias Hyperledger.Ledger
   
   setup do
-    System.put_env("NODE_URL", "http://localhost")
-    %Node{url: "http://localhost", public_key: "abc"}
-    |> Repo.insert
+    node = create_node(1)
+    System.put_env("NODE_URL", node.url)
     :ok
   end
   
