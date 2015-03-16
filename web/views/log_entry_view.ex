@@ -7,13 +7,7 @@ defmodule Hyperledger.LogEntryView do
         version: "1.0",
         data: %{
           logEntries: (Enum.map entries, fn entry ->
-            %{
-              command: entry.command,
-              data: entry.data,
-              prepared: entry.prepared,
-              committed: entry.committed,
-              executed: entry.executed
-            }
+            Hyperledger.LogEntry.as_json(entry)
           end)
         }
       }
@@ -37,17 +31,7 @@ defmodule Hyperledger.LogEntryView do
     %{
       uber: %{
         version: "1.0",
-        data: %{
-          logEntry: %{
-            id: entry.id,
-            view: entry.view,
-            command: entry.command,
-            data: entry.data,
-            prepared: entry.prepared,
-            committed: entry.committed,
-            executed: entry.executed
-          }
-        }
+        data: Hyperledger.LogEntry.as_json(entry)
       }
     }
   end
