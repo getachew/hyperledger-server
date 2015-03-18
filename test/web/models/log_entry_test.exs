@@ -121,7 +121,7 @@ defmodule Hyperledger.LogEntryModelTest do
   
   test "inserting a log entry returns ok if primary has record which matches" do
     LogEntry.create command: "ledger/create", data: sample_ledger_data
-    assert {:ok, _} = LogEntry.insert(
+    assert {:ok, %LogEntry{}} = LogEntry.insert(
       id: 1, view: 1, command: "ledger/create", data: sample_ledger_data,
       prepare_confirmations: [%{node_id: 1, signature: "temp_signature"},
                               %{node_id: 2, signature: "temp_signature"}],
@@ -134,18 +134,20 @@ defmodule Hyperledger.LogEntryModelTest do
     node = create_node(2)
     System.put_env("NODE_URL", node.url)
 
-    assert {:ok, _} = LogEntry.insert(
+    assert {:ok, %LogEntry{}} = LogEntry.insert(
       id: 1, view: 1, command: "ledger/create", data: sample_ledger_data,
       prepare_confirmations: [%{node_id: 1, signature: "temp_signature"}],
       commit_confirmations: [])
   end
   
-  test "inserting a log entry without primary signature returns error" do
+  test "inserting a log entry returns ok if node is not primary" do
     node = create_node(2)
     System.put_env("NODE_URL", node.url)
 
-    assert {:error, _} = LogEntry.insert id: 1, view: 1, command: "ledger/create",
-      data: sample_ledger_data, prepare_confirmations: [], commit_confirmations: []
+    assert {:ok, %LogEntry{}} = LogEntry.insert(
+      id: 1, view: 1, command: "ledger/create", data: sample_ledger_data,
+      prepare_confirmations: [%{node_id: 1, signature: "temp_signature"}],
+      commit_confirmations: [])
   end
   
   test "inserting a log entry saves the confirmations and appends its own" do

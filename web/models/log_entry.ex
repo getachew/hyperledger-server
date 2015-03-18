@@ -82,6 +82,7 @@ defmodule Hyperledger.LogEntry do
         true ->
           Repo.rollback(:error)
       end
+      log_entry
     end
   end
   
