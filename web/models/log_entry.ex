@@ -95,6 +95,7 @@ defmodule Hyperledger.LogEntry do
       
       if (prep_conf_count >= Node.quorum and !log_entry.prepared) do
         log_entry = %{ log_entry | prepared: true } |> Repo.update
+        Logger.info "Log entry #{log_entry.id} prepared"
         add_commit(log_entry, signature: "temp_signature", node_id: Node.self.id)
         broadcast(log_entry)
       end
@@ -112,6 +113,7 @@ defmodule Hyperledger.LogEntry do
           
       if (commit_conf_count >= Node.quorum and !log_entry.committed) do
         log_entry = %{ log_entry | committed: true} |> Repo.update
+        Logger.info "Log entry #{log_entry.id} comitted"
         # If previous log entry has been executed then execute
         prev = prev_entry(log_entry)
         if is_nil(prev) or prev.executed do
@@ -126,6 +128,7 @@ defmodule Hyperledger.LogEntry do
     |> Enum.reject(fn n -> n.id == Node.self.id end)
     |> Enum.each fn (node) ->
          try do
+           Logger.info "Broadcasting log entry #{log_entry.id} to #{node.url}"
            HTTPotion.post "#{node.url}/log",
              headers: ["Content-Type": "application/json"],
              body: Poison.encode!(as_json(log_entry)),
