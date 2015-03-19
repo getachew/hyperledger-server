@@ -173,7 +173,7 @@ defmodule Hyperledger.LogEntryModelTest do
     
     assert log_entry.prepared == false
     
-    LogEntry.add_prepare(log_entry, signature: "temp_signature", node_id: node.id)
+    LogEntry.add_prepare(log_entry, node.id, "temp_signature")
     
     assert Repo.get(LogEntry, log_entry.id).prepared == true
   end
@@ -184,7 +184,7 @@ defmodule Hyperledger.LogEntryModelTest do
 
     assert Repo.all(assoc(log_entry, :commit_confirmations)) == []
     
-    LogEntry.add_prepare(log_entry, signature: "temp_signature", node_id: node.id)
+    LogEntry.add_prepare(log_entry, node.id, "temp_signature")
     
     assert Repo.all(assoc(log_entry, :commit_confirmations)) |> Enum.count == 1
   end
@@ -192,12 +192,12 @@ defmodule Hyperledger.LogEntryModelTest do
   test "when a log entry passes the quorum for commit confirmations it is marked as committed and executed" do
     node = create_node(2)
     {:ok, log_entry} = LogEntry.create command: "ledger/create", data: sample_ledger_data
-    LogEntry.add_prepare(log_entry, signature: "temp_signature", node_id: node.id)
+    LogEntry.add_prepare(log_entry, node.id, "temp_signature")
     
     log_entry = Repo.get(LogEntry, log_entry.id)
     assert log_entry.committed == false
 
-    LogEntry.add_commit(log_entry, signature: "temp_signature", node_id: node.id)
+    LogEntry.add_commit(log_entry, node.id, "temp_signature")
     
     log_entry = Repo.get(LogEntry, log_entry.id)
     assert log_entry.prepared  == true
@@ -213,13 +213,13 @@ defmodule Hyperledger.LogEntryModelTest do
              |> Poison.encode!
     {:ok, log_entry_1} = LogEntry.create command: "ledger/create", data: data_1
     {:ok, log_entry_2} = LogEntry.create command: "ledger/create", data: data_2
-    LogEntry.add_prepare(log_entry_1, signature: "temp_signature", node_id: node.id)
-    LogEntry.add_prepare(log_entry_2, signature: "temp_signature", node_id: node.id)
-    LogEntry.add_commit(log_entry_2, signature: "temp_signature", node_id: node.id)
+    LogEntry.add_prepare(log_entry_1, node.id, "temp_signature")
+    LogEntry.add_prepare(log_entry_2, node.id, "temp_signature")
+    LogEntry.add_commit(log_entry_2, node.id, "temp_signature")
     
     assert Repo.all(Ledger) |> Enum.count == 0
 
-    LogEntry.add_commit(log_entry_1, signature: "temp_signature", node_id: node.id)
+    LogEntry.add_commit(log_entry_1, node.id, "temp_signature")
     
     assert Repo.all(Ledger) |> Enum.count == 2
   end

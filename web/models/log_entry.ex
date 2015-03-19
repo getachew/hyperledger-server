@@ -32,8 +32,8 @@ defmodule Hyperledger.LogEntry do
       id = (Repo.all(LogEntry) |> Enum.count) + 1
 
       log_entry = %LogEntry{id: id, view: 1, command: command, data: data}
-      log_entry = Repo.insert(log_entry)        
-      add_prepare(log_entry, signature: "temp_signature", node_id: Node.self.id)
+                  |> Repo.insert        
+      add_prepare(log_entry, Node.self.id, "temp_signature")
       broadcast(log_entry)
       log_entry
     end
@@ -56,10 +56,10 @@ defmodule Hyperledger.LogEntry do
           # Prepares
           [%{node_id: Node.self.id, signature: "temp_signature"}]
           |> Enum.into(prep_confs)
-          |> Enum.each(&(add_prepare(log_entry, signature: &1.signature, node_id: &1.node_id)))
+          |> Enum.each(&(add_prepare(log_entry, &1.node_id, &1.signature)))
           # Commits
           commit_confs
-          |> Enum.each(&(add_commit(log_entry, signature: &1.signature, node_id: &1.node_id)))
+          |> Enum.each(&(add_commit(log_entry, &1.node_id, &1.signature)))
           broadcast(log_entry)
           log_entry
           
@@ -74,14 +74,14 @@ defmodule Hyperledger.LogEntry do
                             |> Enum.map &(&1.node_id)
               prep_confs
               |> Enum.reject(&(&1.node_id in pc_node_ids))
-              |> Enum.each &(add_prepare(log_entry, signature: &1.signature, node_id: &1.node_id))
+              |> Enum.each &(add_prepare(log_entry, &1.node_id, &1.signature))
               
               # Commits
               cc_node_ids = Repo.all(assoc(log_entry, :commit_confirmations))
                             |> Enum.map &(&1.node_id)
               commit_confs
               |> Enum.reject(&(&1.node_id in cc_node_ids))
-              |> Enum.each &(add_commit(log_entry, signature: &1.signature, node_id: &1.node_id))
+              |> Enum.each &(add_commit(log_entry, &1.node_id, &1.signature))
           end
         true ->
           Repo.rollback(:error)
@@ -90,7 +90,7 @@ defmodule Hyperledger.LogEntry do
     end
   end
   
-  def add_prepare(log_entry, signature: signature, node_id: node_id) do
+  def add_prepare(log_entry, node_id, signature) do
     Repo.transaction fn ->
       prep_conf = build(log_entry, :prepare_confirmations)
       %{ prep_conf | signature: signature, node_id: node_id }
@@ -101,13 +101,13 @@ defmodule Hyperledger.LogEntry do
       if (prep_conf_count >= Node.quorum and !log_entry.prepared) do
         log_entry = %{ log_entry | prepared: true } |> Repo.update
         Logger.info "Log entry #{log_entry.id} prepared"
-        add_commit(log_entry, signature: "temp_signature", node_id: Node.self.id)
+        add_commit(log_entry, Node.self.id, "temp_signature")
         broadcast(log_entry)
       end
     end
   end
   
-  def add_commit(log_entry, signature: signature, node_id: node_id) do
+  def add_commit(log_entry, node_id, signature) do
     Repo.transaction fn ->
       commit_conf = build(log_entry, :commit_confirmations)
       %{ commit_conf | signature: signature, node_id: node_id }
