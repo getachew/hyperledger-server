@@ -159,6 +159,12 @@ defmodule Hyperledger.LogEntryModelTest do
         node_id: 1, signature: "temp_signature"}], commit_confirmations: []
     
     assert Repo.all(PrepareConfirmation) |> Enum.count == 2
+    
+    LogEntry.insert id: 1, view: 1, command: "ledger/create", data: sample_ledger_data,
+      prepare_confirmations: [%{node_id: 1, signature: "temp_signature"}],
+      commit_confirmations: [%{node_id: 1, signature: "temp_signature"}]
+    
+    assert Repo.all(CommitConfirmation) |> Enum.count == 2
   end
   
   test "when a log entry passes the quorum for prepare confirmations it is marked as prepared" do

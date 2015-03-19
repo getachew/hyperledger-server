@@ -48,7 +48,11 @@ defmodule Hyperledger.LogEntry do
       cond do
         # If the node is a replica and the log has a prepare from the primary
         Node.self.id != 1 and (1 in prep_ids) ->
-          log_entry = Repo.insert(log_entry)
+          case Repo.get(LogEntry, id) do
+            nil -> log_entry = Repo.insert(log_entry)
+            saved_entry -> log_entry = saved_entry
+          end 
+ 
           # Prepares
           [%{node_id: Node.self.id, signature: "temp_signature"}]
           |> Enum.into(prep_confs)
