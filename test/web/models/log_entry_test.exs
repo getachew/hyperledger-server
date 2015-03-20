@@ -140,16 +140,6 @@ defmodule Hyperledger.LogEntryModelTest do
       commit_confirmations: [])
   end
   
-  test "inserting a log entry returns ok if node is not primary" do
-    node = create_node(2)
-    System.put_env("NODE_URL", node.url)
-
-    assert {:ok, %LogEntry{}} = LogEntry.insert(
-      id: 1, view: 1, command: "ledger/create", data: sample_ledger_data,
-      prepare_confirmations: [%{node_id: 1, signature: "temp_signature"}],
-      commit_confirmations: [])
-  end
-  
   test "inserting a log entry saves the confirmations and appends its own" do
     node = create_node(2)
     System.put_env("NODE_URL", node.url)
