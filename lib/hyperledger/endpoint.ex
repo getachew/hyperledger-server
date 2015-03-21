@@ -1,8 +1,10 @@
 defmodule Hyperledger.Endpoint do
   use Phoenix.Endpoint, otp_app: :hyperledger
 
+  # Serve at "/" the given assets from "priv/static" directory
   plug Plug.Static,
-    at: "/", from: :hyperledger
+    at: "/", from: :hyperledger,
+    only: ~w(css images js favicon.ico robots.txt)
 
   plug Plug.Logger
 
