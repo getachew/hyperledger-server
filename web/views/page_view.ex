@@ -1,7 +1,7 @@
 defmodule Hyperledger.PageView do
   use Hyperledger.Web, :view
-  
-  def render("index.json", _params) do
+    
+  def render("index.json", %{conn: conn}) do
     %{
       uber:
       %{
@@ -10,18 +10,12 @@ defmodule Hyperledger.PageView do
         [
           %{
             rel: ["self"],
-            url: System.get_env("NODE_URL")
+            url: page_url(conn, :index)
           },
           %{
             name: "ledgers",
             rel: ["collection"],
-            # url: Hyperledger.Router.Helper.ledger_path(@conn)
-          },
-          %{
-            name: "search",
-            rel: ["search","collection"],
-            url: "http://example.org/search",
-            model: "{?title}"
+            url: ledger_url(conn, :index)
           }
         ]
       }
