@@ -1,18 +1,36 @@
 defmodule Hyperledger.LedgerView do
   use Hyperledger.Web, :view
   
-  def render("index.json", %{ledgers: ledgers}) do
+  def render("index.json", %{conn: conn, ledgers: ledgers}) do
     %{
       uber: %{
         version: "1.0",
-        data: %{
-          ledgers: (Enum.map ledgers, fn ledger ->
-            %{
-              hash: ledger.hash,
-              publicKey: ledger.public_key
-            }
-          end)
-        }
+        data: [
+          %{
+            rel: ["self"],
+            url: ledger_url(conn, :index)
+          },
+          %{
+            id: "ledgers",
+            rel: ["collection"],
+            data: Enum.map(ledgers, fn ledger ->
+              %{
+                name: "ledger",
+                rel: ["item"],
+                data: [
+                  %{
+                    name: "hash",
+                    value: ledger.hash
+                  },
+                  %{
+                    name: "publicKey",
+                    value: ledger.public_key
+                  }
+                ]
+              }
+            end)
+          }
+        ]
       }
     }
   end
