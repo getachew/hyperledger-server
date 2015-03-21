@@ -8,7 +8,6 @@ use Mix.Config
 # Configures the endpoint
 config :hyperledger, Hyperledger.Endpoint,
   url: [host: "localhost"],
-  http: [port: System.get_env("PORT")],
   secret_key_base: "VaFIvdwH2aishtUT7jQQv+wYGqCwOBFqiwiS/kiwfMECrhXEWJrucN+Qd8SueGzi",
   debug_errors: false
 
@@ -19,6 +18,7 @@ config :logger, :console,
 
 # Configuration for Ecto
 config :hyperledger, Hyperledger.Repo,
+  adapter: Ecto.Adapters.Postgres,
   url: {:system, "DATABASE_URL"}
 
 # Import environment specific config. This must remain at the bottom
