@@ -9,7 +9,8 @@ use Mix.Config
 config :hyperledger, Hyperledger.Endpoint,
   url: [host: "localhost"],
   secret_key_base: "VaFIvdwH2aishtUT7jQQv+wYGqCwOBFqiwiS/kiwfMECrhXEWJrucN+Qd8SueGzi",
-  debug_errors: false
+  debug_errors: false,
+  pubsub: [name: Hyperledger.PubSub, adapter: Phoenix.PubSub.PG2]
 
 # Configures Elixir's Logger
 config :logger, :console,
