@@ -5,12 +5,15 @@ Mix.Task.run "ecto.create", ["Hyperledger.Repo"]
 Mix.Task.run "ecto.migrate", ["Hyperledger.Repo"]
 
 defmodule HyperledgerTest.Case do
+  import Plug.Conn
+  
   use ExUnit.CaseTemplate
   use Plug.Test
   
   alias Ecto.Adapters.SQL
   alias Hyperledger.Repo
   alias Hyperledger.Node
+  alias Hyperledger.Router
 
   setup do
     SQL.begin_test_transaction(Repo)
@@ -26,9 +29,11 @@ defmodule HyperledgerTest.Case do
     end
   end
   
-  def call(router, verb, path, params \\ nil, headers \\ []) do
-    conn = conn(verb, path, params, headers) |> Plug.Conn.fetch_params
-    router.call(conn, router.init([]))
+  def call(verb, path, params \\ nil, headers \\ []) do
+    conn = conn(verb, path, params, headers)
+           |> put_private(:phoenix_endpoint, Hyperledger.Endpoint)
+           |> fetch_params
+    Router.call(conn, Router.init([]))
   end
   
   def create_node(n) do
