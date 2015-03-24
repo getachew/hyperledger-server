@@ -13,9 +13,7 @@ defmodule Hyperledger.LedgerController do
   end
   
   def create(conn, params) do
-    {:ok, json_data} = params
-    |> Map.take(["ledger"])
-    |> Poison.encode
+    json_data = params |> Map.take(["ledger"]) |> Poison.encode!
     LogEntry.create(command: "ledger/create", data: json_data)
     ledger = Repo.get(Ledger, params["ledger"]["hash"])
     conn
