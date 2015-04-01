@@ -30,7 +30,6 @@ defmodule Hyperledger.Mixfile do
      {:cowboy, "~> 1.0"},
      {:phoenix_ecto, "~> 0.1"},
      {:postgrex, "~> 0.8"},
-     {:relax, "~> 0.0.1"},
      {:dotenv, "~> 0.0.4"},
      {:uuid, "~> 0.1.5"},
      {:ibrowse, github: "cmullaparthi/ibrowse", tag: "v4.1.1"},

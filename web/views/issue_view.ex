@@ -31,7 +31,7 @@ defmodule Hyperledger.IssueView do
     }
   end
   
-  def render("show.json", %{conn: conn, issue: issue}) do
+  def render("show.json", %{issue: issue}) do
     %{
       uber: %{
         version: "1.0",

@@ -8,7 +8,7 @@ defmodule Hyperledger.TransferController do
   
   plug :action
 
-  def index(conn, params) do
+  def index(conn, _params) do
     transfers = Repo.all(Transfer)
     render conn, "index.json", transfers: transfers
   end
