@@ -26,9 +26,10 @@ defmodule Hyperledger.Ledger do
   def create(attrs) do
     [hash: h, public_key: pk, primary_account_public_key: a_pk] = attrs
     Repo.transaction fn ->
-      %Ledger{hash: h, public_key: pk, primary_account_public_key: a_pk}
-      |> Repo.insert
+      ledger = %Ledger{hash: h, public_key: pk, primary_account_public_key: a_pk}
+               |> Repo.insert
       %Account{ledger_hash: h, public_key: a_pk} |> Repo.insert
+      ledger
     end
   end
   

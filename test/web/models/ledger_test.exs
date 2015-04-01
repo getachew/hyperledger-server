@@ -1,4 +1,4 @@
-defmodule Hyperledger.ModelTest.LogEntry do
+defmodule Hyperledger.LedgerModelTest do
   use HyperledgerTest.Case
   
   alias Hyperledger.Repo
@@ -21,5 +21,12 @@ defmodule Hyperledger.ModelTest.LogEntry do
       primary_account_public_key: "cde")
     
     assert Repo.get(Account, "cde") != nil
+  end
+  
+  test "`create` returns the ledger" do
+    assert {:ok, %Ledger{}} = Ledger.create(
+                                hash: "123",
+                                public_key: "abc",
+                                primary_account_public_key: "cde")
   end
 end
