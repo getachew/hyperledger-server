@@ -1,27 +1,25 @@
 defmodule Hyperledger.TransferController do
   use Hyperledger.Web, :controller
-
+  use Ecto.Model
+  
+  alias Hyperledger.Transfer
+  alias Hyperledger.LogEntry
+  alias Hyperledger.Repo
+  
   plug :action
 
-  def create(conn, params) do
-    %{"transfer" =>
-      %{"amount" => amount,
-        "uuid" => uuid,
-        "sourcePublicKey" => source_public_key,
-        "destinationPublicKey" => destination_public_key}
-      } = params
-    transfer = %Hyperledger.Transfer{
-      amount: amount,
-      uuid: uuid,
-      source_public_key: source_public_key,
-      destination_public_key: destination_public_key}
-      |> Hyperledger.Repo.insert
-    json conn, serialize(transfer, conn)
+  def index(conn, params) do
+    transfers = Repo.all(Transfer)
+    render conn, "index.json", transfers: transfers
   end
   
-  defp serialize(obj, conn) do
-    obj
-    |> Hyperledger.TransferSerializer.as_json(conn, %{})
-    |> Poison.encode!
+  def create(conn, params) do
+    json_data = params |> Map.take(["transfer"]) |> Poison.encode!
+    LogEntry.create(command: "transfer/create", data: json_data)
+    uuid = UUID.info(params["transfer"]["uuid"])[:binary]
+    transfer = Repo.get(Transfer, uuid)
+    conn
+    |> put_status(:created)
+    |> render "show.json", transfer: transfer
   end
 end
