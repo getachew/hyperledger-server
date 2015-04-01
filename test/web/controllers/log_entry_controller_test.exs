@@ -1,7 +1,6 @@
 defmodule Hyperledger.LogEntryControllerTest do
   use HyperledgerTest.Case
     
-  alias Hyperledger.Router
   alias Hyperledger.Repo
   alias Hyperledger.LogEntry
   
@@ -12,13 +11,12 @@ defmodule Hyperledger.LogEntryControllerTest do
   end
   
   test "list log" do
-    conn = call(Router, :get, "/log")
+    conn = call(:get, "/log")
     assert conn.status == 200
   end
   
   test "refuse to create new log when primary" do
-    conn = call(Router, :post, "/log", log_entry_body,
-      headers: [{"content-type", "application/json"}])
+    conn = call(:post, "/log", log_entry_body, [{"content-type", "application/json"}])
 
     assert conn.status == 403
     assert Repo.all(LogEntry) == []
@@ -28,8 +26,7 @@ defmodule Hyperledger.LogEntryControllerTest do
     node = create_node(2)
     System.put_env("NODE_URL", node.url)
     
-    conn = call(Router, :post, "/log", log_entry_body,
-      headers: [{"content-type", "application/json"}])
+    conn = call(:post, "/log", log_entry_body, [{"content-type", "application/json"}])
 
     assert conn.status == 201
     assert Repo.all(LogEntry) |> Enum.count == 1
