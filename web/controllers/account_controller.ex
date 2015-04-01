@@ -3,35 +3,28 @@ defmodule Hyperledger.AccountController do
   use Ecto.Model
   
   alias Hyperledger.Repo
-  alias Hyperledger.Ledger
   alias Hyperledger.Account
+  alias Hyperledger.LogEntry
   
   plug :action
 
-  def index(conn, params) do
-    ledger = Repo.get(Ledger, params["ledger_id"])
-    accounts = Repo.all assoc(ledger, :accounts)
-    json conn, serialize(accounts, conn)
-  end
-
-  def show(conn, params) do
-    account = Repo.get(Account, params["account_id"])
-    json conn, serialize(account, conn)
-  end
-
-  def create(conn, params) do
-    %{"account" => %{"publicKey" => public_key}} = params
-    ledger = %Account{
-      public_key: public_key,
-      ledger_hash: params["ledger_hash"],
-      balance: 0}
-      |> Repo.insert
-    json conn, serialize(ledger, conn)
+  def index(conn, _params) do
+    accounts = Repo.all(Account)
+    render conn, "index.json", accounts: accounts
   end
   
-  defp serialize(obj, conn) do
-    obj
-    |> Hyperledger.AccountSerializer.as_json(conn, %{})
-    |> Poison.encode!
+  def show(conn, params) do
+    account = Repo.first(Acccount, params["id"])
+    render conn, "show.json", account: account
+  end
+  
+
+  def create(conn, params) do
+    json_data = params |> Map.take(["account"]) |> Poison.encode!
+    LogEntry.create(command: "account/create", data: json_data)
+    account = Repo.get(Account, params["account"]["publicKey"])
+    conn
+    |> put_status(:created)
+    |> render "show.json", account: account
   end
 end

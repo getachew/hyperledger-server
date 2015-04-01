@@ -1,17 +1,28 @@
 defmodule Hyperledger.AccountControllerTest do
   use HyperledgerTest.Case
-  import Plug.Test
-  alias Hyperledger.Router
+  
+  alias Hyperledger.Ledger
+  alias Hyperledger.Account
+  alias Hyperledger.LogEntry
+  alias Hyperledger.Repo
 
   setup do
-    ledger = %Hyperledger.Ledger{public_key: "123", hash: "abc"}
-    Hyperledger.Repo.insert(ledger)
+    create_primary
+    Ledger.create hash: "123", public_key: "abc", primary_account_public_key: "def"
     :ok
   end
 
-  test "get ledger accounts" do
-    conn = conn(:get, "/ledgers/abc/accounts", headers: [{"content-type", "application/json"}])
-    conn = Router.call(conn, [])
+  test "GET ledger accounts" do
+    conn = call(:get, "/accounts", [{"content-type", "application/json"}])
     assert conn.status == 200
+  end
+  
+  test "POST /accounts creates log entry and account" do
+    body = %{account: %{publicKey: "abc", ledgerHash: "123"}}
+    conn = call(:post, "/accounts", body, [{"content-type", "application/json"}])
+    
+    assert conn.status == 201
+    assert Repo.all(Account)  |> Enum.count == 2
+    assert Repo.all(LogEntry) |> Enum.count == 1
   end
 end
