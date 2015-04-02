@@ -233,7 +233,7 @@ defmodule Hyperledger.LogEntryModelTest do
   test "executing log entry creates issue and changes primary wallet balances" do
     Ledger.create(hash: "123", public_key: "abc", primary_account_public_key: "cde")
     data = %{issue:
-             %{uuid: UUID.uuid4,
+             %{uuid: Ecto.UUID.generate,
                ledgerHash: "123",
                amount: 100}}
            |> Poison.encode!
@@ -245,10 +245,10 @@ defmodule Hyperledger.LogEntryModelTest do
   
   test "executing log entry creates transfer and changes wallet balances" do
     Ledger.create(hash: "123", public_key: "abc", primary_account_public_key: "cde")
-    Issue.create(uuid: UUID.uuid4, ledger_hash: "123", amount: 100)
+    Issue.create(uuid: Ecto.UUID.generate, ledger_hash: "123", amount: 100)
     %Account{public_key: "def", ledger_hash: "123"} |> Repo.insert
     data = %{transfer:
-             %{uuid: UUID.uuid4,
+             %{uuid: Ecto.UUID.generate,
                amount: 100,
                sourcePublicKey: "cde",
                destinationPublicKey: "def"}}

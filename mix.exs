@@ -31,7 +31,6 @@ defmodule Hyperledger.Mixfile do
      {:phoenix_ecto, "~> 0.1"},
      {:postgrex, "~> 0.8"},
      {:dotenv, "~> 0.0.4"},
-     {:uuid, "~> 0.1.5"},
      {:ibrowse, github: "cmullaparthi/ibrowse", tag: "v4.1.1"},
      {:httpotion, "~> 2.0.0"},
      {:mock, "~> 0.1.0"}]

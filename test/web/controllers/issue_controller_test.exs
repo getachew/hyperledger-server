@@ -21,7 +21,7 @@ defmodule Hyperledger.IssueControllerTest do
   end
   
   test "POST /ledger/{id}/issues creates log entry and increases the primary wallet balance", %{ledger: ledger} do
-    body = %{issue: %{uuid: UUID.uuid4, ledgerHash: "123", amount: 100}}
+    body = %{issue: %{uuid: Ecto.UUID.generate, ledgerHash: "123", amount: 100}}
     conn = call(:post, "/ledgers/#{ledger.hash}/issues", body, [{"content-type", "application/json"}])
     
     assert conn.status == 201

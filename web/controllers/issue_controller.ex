@@ -18,8 +18,7 @@ defmodule Hyperledger.IssueController do
   def create(conn, params) do
     json_data = params |> Map.take(["issue"]) |> Poison.encode!
     LogEntry.create(command: "issue/create", data: json_data)
-    uuid = UUID.info(params["issue"]["uuid"])[:binary]
-    issue = Repo.get(Issue, uuid)
+    issue = Repo.get(Issue, params["issue"]["uuid"])
     conn
     |> put_status(:created)
     |> render "show.json", issue: issue

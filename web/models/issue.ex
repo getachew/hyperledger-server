@@ -5,7 +5,7 @@ defmodule Hyperledger.Issue do
   alias Hyperledger.Issue
   alias Hyperledger.Ledger
   
-  @primary_key {:uuid, :uuid, []}
+  @primary_key {:uuid, Ecto.UUID, []}
   schema "issues" do
     field :amount, :integer
 
@@ -23,7 +23,7 @@ defmodule Hyperledger.Issue do
       %{account | balance: (account.balance + attrs[:amount])}
       |> Repo.update
       %Issue{
-        uuid: UUID.info(attrs[:uuid])[:binary],
+        uuid: attrs[:uuid],
         ledger_hash: attrs[:ledger_hash],
         amount: attrs[:amount]}
       |> Repo.insert

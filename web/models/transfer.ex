@@ -5,7 +5,7 @@ defmodule Hyperledger.Transfer do
   alias Hyperledger.Transfer
   alias Hyperledger.Account
   
-  @primary_key {:uuid, :uuid, []}
+  @primary_key {:uuid, Ecto.UUID, []}
   schema "transfers" do
     field :amount, :integer
 
@@ -24,7 +24,7 @@ defmodule Hyperledger.Transfer do
   def create(attrs) do
     Repo.transaction fn ->
       transfer = %Transfer{
-        uuid: UUID.info(attrs[:uuid])[:binary],
+        uuid: attrs[:uuid],
         amount: attrs[:amount],
         source_public_key: attrs[:source_public_key],
         destination_public_key: attrs[:destination_public_key]

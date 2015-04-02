@@ -21,19 +21,19 @@ defmodule Hyperledger.ModelTest.Transfer do
   end
   
   test "`create` inserts the record into the db" do
-    uuid = UUID.uuid4
+    uuid = Ecto.UUID.generate
     Transfer.create(
       uuid: uuid,
       source_public_key: "234",
       destination_public_key: "345",
       amount: 100)
 
-    assert Repo.get(Transfer, UUID.info(uuid)[:binary]) != nil
+    assert Repo.get(Transfer, uuid) != nil
   end
 
   test "`create` modifies the balance of the source and dest wallet" do
     Transfer.create(
-      uuid: UUID.uuid4,
+      uuid: Ecto.UUID.generate,
       source_public_key: "234",
       destination_public_key: "345",
       amount: 100)

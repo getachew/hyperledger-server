@@ -21,7 +21,7 @@ defmodule Hyperledger.TransferControllerTest do
   end
   
   test "POST transfers creates log entry and a transfer" do
-    uuid = UUID.uuid4
+    uuid = Ecto.UUID.generate
     body = %{transfer: %{uuid: uuid, sourcePublicKey: "def", destinationPublicKey: "fgh", amount: 100}}
     conn = call(:post, "/transfers", body, [{"content-type", "application/json"}])
     

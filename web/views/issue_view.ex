@@ -19,6 +19,10 @@ defmodule Hyperledger.IssueView do
                 rel: ["item"],
                 data: [
                   %{
+                    name: "uuid",
+                    value: issue.uuid
+                  },
+                  %{
                     name: "amount",
                     value: issue.amount
                   }

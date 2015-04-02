@@ -16,8 +16,7 @@ defmodule Hyperledger.TransferController do
   def create(conn, params) do
     json_data = params |> Map.take(["transfer"]) |> Poison.encode!
     LogEntry.create(command: "transfer/create", data: json_data)
-    uuid = UUID.info(params["transfer"]["uuid"])[:binary]
-    transfer = Repo.get(Transfer, uuid)
+    transfer = Repo.get(Transfer, params["transfer"]["uuid"])
     conn
     |> put_status(:created)
     |> render "show.json", transfer: transfer

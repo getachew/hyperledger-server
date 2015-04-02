@@ -49,6 +49,10 @@ defmodule Hyperledger.TransferView do
             name: "transfer",
             data: [
               %{
+                name: "uuid",
+                value: transfer.uuid
+              },
+              %{
                 name: "sourcePublicKey",
                 value: transfer.source_public_key
               },
