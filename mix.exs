@@ -26,9 +26,9 @@ defmodule Hyperledger.Mixfile do
   #
   # Type `mix help deps` for examples and options
   defp deps do
-    [{:phoenix, "~> 0.10.0"},
+    [{:phoenix, "~> 0.11.0"},
+     {:phoenix_ecto, "~> 0.3"},
      {:cowboy, "~> 1.0"},
-     {:phoenix_ecto, "~> 0.1"},
      {:postgrex, "~> 0.8"},
      {:dotenv, "~> 0.0.4"},
      {:ibrowse, github: "cmullaparthi/ibrowse", tag: "v4.1.1"},
