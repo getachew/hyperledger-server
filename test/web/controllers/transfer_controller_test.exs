@@ -1,11 +1,9 @@
 defmodule Hyperledger.TransferControllerTest do
-  use HyperledgerTest.Case
-  use Ecto.Model
+  use Hyperledger.ConnCase
   
   alias Hyperledger.Transfer
   alias Hyperledger.Ledger
   alias Hyperledger.LogEntry
-  alias Hyperledger.Repo
 
   setup do
     create_primary
@@ -16,14 +14,14 @@ defmodule Hyperledger.TransferControllerTest do
   end
 
   test "GET transfers" do
-    conn = call(:get, "/transfers", [{"content-type", "application/json"}])
+    conn = get conn(), "/transfers"
     assert conn.status == 200
   end
   
   test "POST transfers creates log entry and a transfer" do
     uuid = Ecto.UUID.generate
     body = %{transfer: %{uuid: uuid, sourcePublicKey: "def", destinationPublicKey: "fgh", amount: 100}}
-    conn = call(:post, "/transfers", body, [{"content-type", "application/json"}])
+    conn = post conn(), "/transfers", body
     
     assert conn.status == 201
     assert Repo.all(Transfer) |> Enum.count == 1

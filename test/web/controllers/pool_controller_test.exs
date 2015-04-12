@@ -1,5 +1,5 @@
 defmodule Hyperledger.PoolControllerTest do
-  use HyperledgerTest.Case
+  use Hyperledger.ConnCase
 
   setup do
     create_primary
@@ -8,7 +8,7 @@ defmodule Hyperledger.PoolControllerTest do
   end
 
   test "GET pool" do
-    conn = call(:get, "/pool", [{"content-type", "application/json"}])
+    conn = get conn(), "/pool"
     assert conn.status == 200
   end
 end

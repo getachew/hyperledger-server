@@ -1,5 +1,5 @@
 defmodule Hyperledger.LedgerModelTest do
-  use HyperledgerTest.Case
+  use Hyperledger.ConnCase
   
   alias Hyperledger.Repo
   alias Hyperledger.Ledger

@@ -1,10 +1,9 @@
 defmodule Hyperledger.AccountControllerTest do
-  use HyperledgerTest.Case
+  use Hyperledger.ConnCase
   
   alias Hyperledger.Ledger
   alias Hyperledger.Account
   alias Hyperledger.LogEntry
-  alias Hyperledger.Repo
 
   setup do
     create_primary
@@ -13,13 +12,13 @@ defmodule Hyperledger.AccountControllerTest do
   end
 
   test "GET ledger accounts" do
-    conn = call(:get, "/accounts", [{"content-type", "application/json"}])
+    conn = get conn(), "/accounts"
     assert conn.status == 200
   end
   
   test "POST /accounts creates log entry and account" do
     body = %{account: %{publicKey: "abc", ledgerHash: "123"}}
-    conn = call(:post, "/accounts", body, [{"content-type", "application/json"}])
+    conn = post conn(), "/accounts", body
     
     assert conn.status == 201
     assert Repo.all(Account)  |> Enum.count == 2

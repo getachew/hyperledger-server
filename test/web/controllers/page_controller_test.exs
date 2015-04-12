@@ -1,8 +1,8 @@
 defmodule Hyperledger.PageControllerTest do
-  use HyperledgerTest.Case
+  use Hyperledger.ConnCase
   
   test "GET the root path returns 200" do
-    conn = call(:get, "/")
+    conn = get conn(), "/"
     assert conn.status == 200
   end
 end

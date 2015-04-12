@@ -1,4 +1,4 @@
 defmodule Hyperledger.ModelTest.PrepareConfirmation do
-  use HyperledgerTest.Case
+  use Hyperledger.ConnCase
   use Ecto.Model
 end

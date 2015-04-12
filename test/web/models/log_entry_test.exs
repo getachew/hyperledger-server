@@ -1,5 +1,5 @@
 defmodule Hyperledger.LogEntryModelTest do
-  use HyperledgerTest.Case
+  use Hyperledger.ConnCase
   use Ecto.Model
   
   import Mock

@@ -1,7 +1,6 @@
 defmodule Hyperledger.LedgerControllerTest do
-  use HyperledgerTest.Case
+  use Hyperledger.ConnCase
     
-  alias Hyperledger.Repo
   alias Hyperledger.LogEntry
   alias Hyperledger.Ledger
   
@@ -11,13 +10,13 @@ defmodule Hyperledger.LedgerControllerTest do
   end
   
   test "list ledgers" do
-    conn = call(:get, "/ledgers")
+    conn = get conn(), "/ledgers"
     assert conn.status == 200
   end
   
   test "create ledger through log entry" do
     body = %{ledger: %{hash: "123", publicKey: "abc", primaryAccountPublicKey: "def"}}
-    conn = call(:post, "/ledgers", body, [{"content-type", "application/json"}])
+    conn = post conn(), "/ledgers", body
     
     assert conn.status == 201
     assert Repo.all(Ledger)   |> Enum.count == 1

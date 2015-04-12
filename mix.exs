@@ -5,7 +5,7 @@ defmodule Hyperledger.Mixfile do
     [app: :hyperledger,
      version: "0.0.1",
      elixir: "~> 1.0",
-     elixirc_paths: ["lib", "web"],
+     elixirc_paths: ["lib", "web", "test/support"],
      compilers: [:phoenix] ++ Mix.compilers,
      deps: deps]
   end

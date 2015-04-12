@@ -1,11 +1,9 @@
 defmodule Hyperledger.IssueControllerTest do
-  use HyperledgerTest.Case
-  use Ecto.Model
+  use Hyperledger.ConnCase
   
   alias Hyperledger.Issue
   alias Hyperledger.Ledger
   alias Hyperledger.LogEntry
-  alias Hyperledger.Repo
 
   setup do
     create_primary
@@ -16,13 +14,13 @@ defmodule Hyperledger.IssueControllerTest do
   end
 
   test "GET ledger issues" do
-    conn = call(:get, "/ledgers/123/issues", [{"content-type", "application/json"}])
+    conn = get conn(), "/ledgers/123/issues"
     assert conn.status == 200
   end
   
   test "POST /ledger/{id}/issues creates log entry and increases the primary wallet balance", %{ledger: ledger} do
     body = %{issue: %{uuid: Ecto.UUID.generate, ledgerHash: "123", amount: 100}}
-    conn = call(:post, "/ledgers/#{ledger.hash}/issues", body, [{"content-type", "application/json"}])
+    conn = post conn(), "/ledgers/#{ledger.hash}/issues", body
     
     assert conn.status == 201
     assert Repo.all(Issue)    |> Enum.count == 1
