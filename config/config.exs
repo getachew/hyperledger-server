@@ -8,6 +8,7 @@ use Mix.Config
 # Configures the endpoint
 config :hyperledger, Hyperledger.Endpoint,
   url: [host: "localhost"],
+  root: Path.expand("..", __DIR__),
   secret_key_base: "VaFIvdwH2aishtUT7jQQv+wYGqCwOBFqiwiS/kiwfMECrhXEWJrucN+Qd8SueGzi",
   debug_errors: false,
   pubsub: [name: Hyperledger.PubSub, adapter: Phoenix.PubSub.PG2]
@@ -17,7 +18,7 @@ config :logger, :console,
   format: "$time $metadata[$level] $message\n",
   metadata: [:request_id]
 
-# Configuration for Ecto
+# Configures Ecto
 config :hyperledger, Hyperledger.Repo,
   adapter: Ecto.Adapters.Postgres,
   url: {:system, "DATABASE_URL"}
