@@ -1,5 +1,6 @@
 /_build
 /deps
+/node_modules
 erl_crash.dump
 *.ez
 .env
