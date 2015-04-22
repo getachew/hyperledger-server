@@ -8,6 +8,6 @@ defmodule Hyperledger.PoolController do
 
   def index(conn, _params) do
     nodes = Repo.all(Node)
-    render conn, "index.json", nodes: nodes
+    render conn, :index, nodes: nodes
   end
 end

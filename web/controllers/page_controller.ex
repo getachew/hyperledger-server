@@ -4,7 +4,7 @@ defmodule Hyperledger.PageController do
   plug :action
   
   def index(conn, _params) do
-    render conn, "index.json"
+    render conn, :index
   end
   
 end

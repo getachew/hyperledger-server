@@ -9,7 +9,7 @@ defmodule Hyperledger.LedgerController do
 
   def index(conn, _params) do
     ledgers = Repo.all(Ledger)
-    render conn, "index.json", ledgers: ledgers
+    render conn, :index, ledgers: ledgers
   end
   
   def create(conn, params) do
@@ -18,6 +18,6 @@ defmodule Hyperledger.LedgerController do
     ledger = Repo.get(Ledger, params["ledger"]["hash"])
     conn
     |> put_status(:created)
-    |> render "show.json", ledger: ledger
+    |> render :show, ledger: ledger
   end
 end

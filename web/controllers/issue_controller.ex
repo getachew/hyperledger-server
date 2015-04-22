@@ -12,7 +12,7 @@ defmodule Hyperledger.IssueController do
   def index(conn, params) do
     ledger = Repo.get(Ledger, params["ledger_id"])
     issues = Repo.all(assoc(ledger, :issues))
-    render conn, "index.json", issues: issues, ledger: ledger
+    render conn, :index, issues: issues, ledger: ledger
   end
 
   def create(conn, params) do
@@ -21,6 +21,6 @@ defmodule Hyperledger.IssueController do
     issue = Repo.get(Issue, params["issue"]["uuid"])
     conn
     |> put_status(:created)
-    |> render "show.json", issue: issue
+    |> render :show, issue: issue
   end
 end

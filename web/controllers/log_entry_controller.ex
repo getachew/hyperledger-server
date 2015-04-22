@@ -8,7 +8,7 @@ defmodule Hyperledger.LogEntryController do
 
   def index(conn, _params) do
     entries = Repo.all(LogEntry)
-    render conn, "index.json", entries: entries
+    render conn, :index, entries: entries
   end
   
   def create(conn, params) do
@@ -28,7 +28,7 @@ defmodule Hyperledger.LogEntryController do
       {:ok, log_entry} ->
         conn
         |> put_status(:created)
-        |> render "show.json", entry: log_entry
+        |> render :show, entry: log_entry
       {:error, _} ->
         conn
         |> put_status(:forbidden)

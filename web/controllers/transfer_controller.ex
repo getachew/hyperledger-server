@@ -10,7 +10,7 @@ defmodule Hyperledger.TransferController do
 
   def index(conn, _params) do
     transfers = Repo.all(Transfer)
-    render conn, "index.json", transfers: transfers
+    render conn, :index, transfers: transfers
   end
   
   def create(conn, params) do
@@ -19,6 +19,6 @@ defmodule Hyperledger.TransferController do
     transfer = Repo.get(Transfer, params["transfer"]["uuid"])
     conn
     |> put_status(:created)
-    |> render "show.json", transfer: transfer
+    |> render :show, transfer: transfer
   end
 end

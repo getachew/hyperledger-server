@@ -10,12 +10,12 @@ defmodule Hyperledger.AccountController do
 
   def index(conn, _params) do
     accounts = Repo.all(Account)
-    render conn, "index.json", accounts: accounts
+    render conn, :index, accounts: accounts
   end
   
   def show(conn, params) do
     account = Repo.first(Acccount, params["id"])
-    render conn, "show.json", account: account
+    render conn, :show, account: account
   end
   
 
@@ -25,6 +25,6 @@ defmodule Hyperledger.AccountController do
     account = Repo.get(Account, params["account"]["publicKey"])
     conn
     |> put_status(:created)
-    |> render "show.json", account: account
+    |> render :show, account: account
   end
 end
