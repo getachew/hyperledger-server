@@ -155,13 +155,8 @@ defmodule Hyperledger.LogEntry do
           |> Ledger.create
           
         "account/create" ->
-          %{"account" => %{
-            "ledgerHash" => hash,
-            "publicKey" => public_key
-          }} = params
-      
-          %Account{ledger_hash: hash, public_key: public_key}
-          |> Repo.insert
+          Account.changeset(%Account{}, underscore_keys(params)["account"])
+          |> Account.create
         
         "issue/create" ->
           %{"issue" => %{
