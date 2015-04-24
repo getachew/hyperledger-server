@@ -7,27 +7,28 @@ defmodule Hyperledger.ModelTest.Issue do
   alias Hyperledger.Ledger
   
   setup do
-    create_ledger
-    :ok
+    {:ok, ledger} = create_ledger
+    params =
+      %{
+        uuid: Ecto.UUID.generate,
+        ledger_hash: ledger.hash,
+        amount: 100
+      }
+    {:ok, params: params}
   end
   
-  test "`create` inserts the record into the db" do
-    uuid = Ecto.UUID.generate
-    Issue.create(
-      uuid: uuid,
-      ledger_hash: "123",
-      amount: 100)
+  test "`create` inserts a changeset into the db", %{params: params} do
+    cs = Issue.changeset(%Issue{}, params)
+    Issue.create(cs)
 
-    assert Repo.get(Issue, uuid) != nil
+    assert Repo.get(Issue, params[:uuid]) != nil
   end
 
-  test "`create` also modifies the balance of the primary wallet" do
-    Issue.create(
-      uuid: Ecto.UUID.generate,
-      ledger_hash: "123",
-      amount: 100)
+  test "`create` also modifies the balance of the primary wallet", %{params: params} do
+    cs = Issue.changeset(%Issue{}, params)
+    Issue.create(cs)
 
-    l = Repo.get(Ledger, "123")
+    l = Repo.get(Ledger, params[:ledger_hash])
     a = Repo.one(assoc(l, :primary_account))
     assert a.balance == 100
   end

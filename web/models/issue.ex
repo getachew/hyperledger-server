@@ -2,7 +2,6 @@ defmodule Hyperledger.Issue do
   use Ecto.Model
 
   alias Hyperledger.Repo
-  alias Hyperledger.Issue
   alias Hyperledger.Ledger
   
   @primary_key {:uuid, Ecto.UUID, []}
@@ -12,21 +11,30 @@ defmodule Hyperledger.Issue do
     timestamps
     
     belongs_to :ledger, Ledger,
-      foreign_key: :ledger_hash, type: :string
+      foreign_key: :ledger_hash,
+      references: :hash,
+      type: :string
+    
+    has_one :account, through: [:ledger, :primary_account]
   end
   
-  def create(attrs) do
-    Repo.transaction fn ->
-      ledger = Repo.get(Ledger, attrs[:ledger_hash])
-      [account] = Repo.all assoc(ledger, :primary_account)
+  @required_fields ~w(uuid amount ledger_hash)
+  @optional_fields ~w()
 
-      %{account | balance: (account.balance + attrs[:amount])}
+  def changeset(transfer, params \\ nil) do
+    transfer
+    |> cast(params, @required_fields, @optional_fields)
+  end
+  
+  def create(changeset) do
+    Repo.transaction fn ->
+      issue = Repo.insert(changeset)
+      issue = Repo.preload(issue, [:ledger, :account])
+
+      %{ issue.account | balance: (issue.account.balance + issue.amount)}
       |> Repo.update
-      %Issue{
-        uuid: attrs[:uuid],
-        ledger_hash: attrs[:ledger_hash],
-        amount: attrs[:amount]}
-      |> Repo.insert
+      
+      issue
     end
   end
   

@@ -245,8 +245,10 @@ defmodule Hyperledger.LogEntryModelTest do
   
   test "executing log entry creates transfer and changes wallet balances" do
     create_ledger
-    Issue.create(uuid: Ecto.UUID.generate, ledger_hash: "123", amount: 100)
-    %Account{public_key: "ghi", ledger_hash: "123"} |> Repo.insert
+    Issue.changeset(%Issue{}, %{uuid: Ecto.UUID.generate, ledger_hash: "123", amount: 100})
+    |> Issue.create
+    %Account{public_key: "ghi", ledger_hash: "123"}
+    |> Repo.insert
     data = %{transfer:
              %{uuid: Ecto.UUID.generate,
                amount: 100,

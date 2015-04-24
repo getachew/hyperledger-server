@@ -147,28 +147,22 @@ defmodule Hyperledger.LogEntry do
   
   def execute(log_entry) do
     Repo.transaction fn ->
-      params = Poison.decode!(log_entry.data)
+      params = Poison.decode!(log_entry.data) |> underscore_keys
       case log_entry.command do
-      
         "ledger/create" ->
-          Ledger.changeset(%Ledger{}, underscore_keys(params)["ledger"])
+          Ledger.changeset(%Ledger{}, params["ledger"])
           |> Ledger.create
           
         "account/create" ->
-          Account.changeset(%Account{}, underscore_keys(params)["account"])
+          Account.changeset(%Account{}, params["account"])
           |> Account.create
         
         "issue/create" ->
-          %{"issue" => %{
-            "uuid" => uuid,
-            "ledgerHash" => hash,
-            "amount" => amount
-          }} = params
-      
-          Issue.create(uuid: uuid, ledger_hash: hash, amount: amount)
+          Issue.changeset(%Issue{}, params["issue"])
+          |> Issue.create
         
         "transfer/create" ->
-          Transfer.changeset(%Transfer{}, underscore_keys(params)["transfer"])
+          Transfer.changeset(%Transfer{}, params["transfer"])
           |> Transfer.create
       end
     
