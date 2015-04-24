@@ -7,10 +7,7 @@ defmodule Hyperledger.ModelTest.Issue do
   alias Hyperledger.Ledger
   
   setup do
-    Ledger.create(
-      hash: "abc",
-      public_key: "123",
-      primary_account_public_key: "cde")
+    create_ledger
     :ok
   end
   
@@ -18,7 +15,7 @@ defmodule Hyperledger.ModelTest.Issue do
     uuid = Ecto.UUID.generate
     Issue.create(
       uuid: uuid,
-      ledger_hash: "abc",
+      ledger_hash: "123",
       amount: 100)
 
     assert Repo.get(Issue, uuid) != nil
@@ -27,10 +24,10 @@ defmodule Hyperledger.ModelTest.Issue do
   test "`create` also modifies the balance of the primary wallet" do
     Issue.create(
       uuid: Ecto.UUID.generate,
-      ledger_hash: "abc",
+      ledger_hash: "123",
       amount: 100)
 
-    l = Repo.get(Ledger, "abc")
+    l = Repo.get(Ledger, "123")
     a = Repo.one(assoc(l, :primary_account))
     assert a.balance == 100
   end

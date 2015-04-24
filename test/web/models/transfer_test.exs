@@ -3,14 +3,10 @@ defmodule Hyperledger.ModelTest.Transfer do
   
   alias Hyperledger.Repo
   alias Hyperledger.Account
-  alias Hyperledger.Ledger
   alias Hyperledger.Transfer
   
   setup do
-    Ledger.create(
-      hash: "abc",
-      public_key: "123",
-      primary_account_public_key: "cde")
+    create_ledger
       
     %Account{public_key: "234", ledger_hash: "abc", balance: 100}
     |> Repo.insert

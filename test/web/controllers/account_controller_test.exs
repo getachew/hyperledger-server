@@ -1,13 +1,12 @@
 defmodule Hyperledger.AccountControllerTest do
   use Hyperledger.ConnCase
   
-  alias Hyperledger.Ledger
   alias Hyperledger.Account
   alias Hyperledger.LogEntry
 
   setup do
     create_primary
-    Ledger.create hash: "123", public_key: "abc", primary_account_public_key: "def"
+    create_ledger
     :ok
   end
 

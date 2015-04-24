@@ -231,7 +231,7 @@ defmodule Hyperledger.LogEntryModelTest do
   end
   
   test "executing log entry creates issue and changes primary wallet balances" do
-    Ledger.create(hash: "123", public_key: "abc", primary_account_public_key: "cde")
+    create_ledger
     data = %{issue:
              %{uuid: Ecto.UUID.generate,
                ledgerHash: "123",
@@ -240,28 +240,28 @@ defmodule Hyperledger.LogEntryModelTest do
     LogEntry.create command: "issue/create", data: data
         
     assert Repo.all(Issue)    |> Enum.count == 1
-    assert Repo.get(Account, "cde").balance == 100
+    assert Repo.get(Account, "def").balance == 100
   end
   
   test "executing log entry creates transfer and changes wallet balances" do
-    Ledger.create(hash: "123", public_key: "abc", primary_account_public_key: "cde")
+    create_ledger
     Issue.create(uuid: Ecto.UUID.generate, ledger_hash: "123", amount: 100)
-    %Account{public_key: "def", ledger_hash: "123"} |> Repo.insert
+    %Account{public_key: "ghi", ledger_hash: "123"} |> Repo.insert
     data = %{transfer:
              %{uuid: Ecto.UUID.generate,
                amount: 100,
-               sourcePublicKey: "cde",
-               destinationPublicKey: "def"}}
+               sourcePublicKey: "def",
+               destinationPublicKey: "ghi"}}
            |> Poison.encode!
     LogEntry.create command: "transfer/create", data: data
     
     assert Repo.all(Transfer) |> Enum.count == 1
-    assert Repo.get(Account, "cde").balance == 0
-    assert Repo.get(Account, "def").balance == 100
+    assert Repo.get(Account, "def").balance == 0
+    assert Repo.get(Account, "ghi").balance == 100
   end
   
   defp sample_ledger_data do
-    %{ledger: %{hash: "123", publicKey: "abc", primaryAccountPublicKey: "cde"}}
+    %{ledger: %{hash: "123", publicKey: "abc", primaryAccountPublicKey: "def"}}
     |> Poison.encode!
   end
 end

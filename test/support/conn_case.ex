@@ -52,4 +52,11 @@ defmodule Hyperledger.ConnCase do
     primary = create_node(1)
     System.put_env("NODE_URL", primary.url)
   end
+  
+  def create_ledger do
+    params = %{hash: "123", public_key: "abc", primary_account_public_key: "def"}
+    Hyperledger.Ledger.changeset(%Hyperledger.Ledger{}, params)
+    |> Hyperledger.Ledger.create
+  end
+  
 end

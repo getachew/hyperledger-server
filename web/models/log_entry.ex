@@ -151,15 +151,9 @@ defmodule Hyperledger.LogEntry do
       case log_entry.command do
       
         "ledger/create" ->
-          %{"ledger" => %{
-            "hash" => hash,
-            "publicKey" => public_key,
-            "primaryAccountPublicKey" => acc_public_key
-          }} = params
-        
-          Ledger.create(hash: hash, public_key: public_key,
-            primary_account_public_key: acc_public_key)
-      
+          Ledger.changeset(%Ledger{}, underscore_keys(params)["ledger"])
+          |> Ledger.create
+          
         "account/create" ->
           %{"account" => %{
             "ledgerHash" => hash,
