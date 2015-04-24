@@ -2,7 +2,6 @@ defmodule Hyperledger.Ledger do
   use Ecto.Model
 
   alias Hyperledger.Repo
-  alias Hyperledger.Ledger
   alias Hyperledger.Account
   alias Hyperledger.Issue
   alias Hyperledger.Transfer

@@ -2,7 +2,6 @@ defmodule Hyperledger.Transfer do
   use Ecto.Model
 
   alias Hyperledger.Repo
-  alias Hyperledger.Transfer
   alias Hyperledger.Account
   
   @primary_key {:uuid, Ecto.UUID, []}
