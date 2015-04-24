@@ -1,5 +1,6 @@
 defmodule Hyperledger.LogEntry do
   use Ecto.Model
+  import Hyperledger.ParamsHelpers, only: [underscore_keys: 1]
   
   require Logger
   
@@ -146,7 +147,7 @@ defmodule Hyperledger.LogEntry do
   
   def execute(log_entry) do
     Repo.transaction fn ->
-      {:ok, params} = Poison.decode(log_entry.data)
+      params = Poison.decode!(log_entry.data)
       case log_entry.command do
       
         "ledger/create" ->
@@ -178,18 +179,8 @@ defmodule Hyperledger.LogEntry do
           Issue.create(uuid: uuid, ledger_hash: hash, amount: amount)
         
         "transfer/create" ->
-          %{"transfer" => %{
-            "uuid" => uuid,
-            "amount" => amount,
-            "sourcePublicKey" => source_public_key,
-            "destinationPublicKey" => destination_public_key
-          }} = params
-      
-          Transfer.create(
-            uuid: uuid,
-            amount: amount,
-            source_public_key: source_public_key,
-            destination_public_key: destination_public_key)
+          Transfer.changeset(%Transfer{}, underscore_keys(params)["transfer"])
+          |> Transfer.create
       end
     
       # Mark as executed and check if there's a follow entry to execute

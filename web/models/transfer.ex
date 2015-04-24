@@ -21,23 +21,25 @@ defmodule Hyperledger.Transfer do
       type: :string
   end
   
-  def create(attrs) do
+  @required_fields ~w(uuid amount source_public_key destination_public_key)
+  @optional_fields ~w()
+
+  def changeset(transfer, params \\ nil) do
+    transfer
+    |> cast(params, @required_fields, @optional_fields)
+  end
+  
+  def create(changeset) do
     Repo.transaction fn ->
-      transfer = %Transfer{
-        uuid: attrs[:uuid],
-        amount: attrs[:amount],
-        source_public_key: attrs[:source_public_key],
-        destination_public_key: attrs[:destination_public_key]
-      }
-        
-      [source] = Repo.all assoc(transfer, :source)
-      [destination] = Repo.all assoc(transfer, :destination)
+      transfer = Repo.insert(changeset)
+      transfer = Repo.preload(transfer, [:source, :destination])
       
-      %{ source | balance: (source.balance - transfer.amount)}
+      %{ transfer.source | balance: (transfer.source.balance - transfer.amount)}
       |> Repo.update
-      %{ destination | balance: (destination.balance + transfer.amount)}
+      %{ transfer.destination | balance: (transfer.destination.balance + transfer.amount)}
       |> Repo.update
-      Repo.insert(transfer)
+      
+      transfer
     end
   end
   
