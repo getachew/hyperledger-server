@@ -44,7 +44,7 @@ defmodule Hyperledger.LogEntryModelTest do
       LogEntry.create command: "ledger/create", data: sample_ledger_data
       
       assert(called(HTTPotion.post("#{node.url}/log",
-        headers: headers, body: body, stream_to: self)))
+        headers: headers, body: body)))
     end
   end
   
@@ -70,7 +70,7 @@ defmodule Hyperledger.LogEntryModelTest do
         commit_confirmations: []
       
       assert(called(HTTPotion.post("#{inital_node_url}/log",
-        headers: headers, body: body, stream_to: self)))
+        headers: headers, body: body)))
     end
   end
   
@@ -95,7 +95,7 @@ defmodule Hyperledger.LogEntryModelTest do
         commit_confirmations: []
             
       assert(called(HTTPotion.post("#{node.url}/log",
-        headers: headers, body: body, stream_to: self)))
+        headers: headers, body: body)))
     end
   end
   

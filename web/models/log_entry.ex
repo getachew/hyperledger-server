@@ -34,8 +34,8 @@ defmodule Hyperledger.LogEntry do
 
       log_entry = %LogEntry{id: id, view: 1, command: command, data: data}
                   |> Repo.insert        
-      add_prepare(log_entry, Node.self.id, "temp_signature")
-      broadcast(log_entry)
+      add_prepare(log_entry, Node.current.id, "temp_signature")
+      Node.broadcast(log_entry.id, as_json(log_entry))
       log_entry
     end
   end
@@ -48,24 +48,24 @@ defmodule Hyperledger.LogEntry do
       
       cond do
         # If the node is a replica and the log has a prepare from the primary
-        Node.self.id != 1 and (1 in prep_ids) ->
+        Node.current.id != 1 and (1 in prep_ids) ->
           case Repo.get(LogEntry, id) do
             nil -> log_entry = Repo.insert(log_entry)
             saved_entry -> log_entry = saved_entry
           end 
  
           # Prepares
-          [%{node_id: Node.self.id, signature: "temp_signature"}]
+          [%{node_id: Node.current.id, signature: "temp_signature"}]
           |> Enum.into(prep_confs)
           |> Enum.each(&(add_prepare(log_entry, &1.node_id, &1.signature)))
           # Commits
           commit_confs
           |> Enum.each(&(add_commit(log_entry, &1.node_id, &1.signature)))
-          broadcast(log_entry)
+          Node.broadcast(log_entry.id, as_json(log_entry))
           log_entry
           
         # Node is primary
-        Node.self.id == 1 ->      
+        Node.current.id == 1 ->      
           case Repo.get(LogEntry, id) do
             nil ->
               Repo.rollback(:error)
@@ -102,8 +102,8 @@ defmodule Hyperledger.LogEntry do
       if (prep_conf_count >= Node.quorum and !log_entry.prepared) do
         log_entry = %{ log_entry | prepared: true } |> Repo.update
         Logger.info "Log entry #{log_entry.id} prepared"
-        add_commit(log_entry, Node.self.id, "temp_signature")
-        broadcast(log_entry)
+        add_commit(log_entry, Node.current.id, "temp_signature")
+        Node.broadcast(log_entry.id, as_json(log_entry))
       end
     end
   end
@@ -127,22 +127,6 @@ defmodule Hyperledger.LogEntry do
         end
       end
     end
-  end
-  
-  def broadcast(log_entry) do
-    Repo.all(Node)
-    |> Enum.reject(fn n -> n.id == Node.self.id end)
-    |> Enum.each fn (node) ->
-         try do
-           Logger.info "Broadcasting log entry #{log_entry.id} to #{node.url}"
-           HTTPotion.post "#{node.url}/log",
-             headers: ["Content-Type": "application/json"],
-             body: Poison.encode!(as_json(log_entry)),
-             stream_to: self
-         rescue
-           _ -> Logger.info "Error posting to replica node @ #{node.url}"
-         end
-       end
   end
   
   def execute(log_entry) do
