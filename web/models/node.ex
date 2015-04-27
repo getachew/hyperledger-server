@@ -61,6 +61,4 @@ defmodule Hyperledger.Node do
       headers: ["Content-Type": "application/json"],
       body: Poison.encode!(data)
   end
-  
-  
 end
