@@ -2,8 +2,8 @@ defmodule Hyperledger.Router do
   use Phoenix.Router
 
   pipeline :api do
-    plug :accepts, ~w(json)
-    plug :put_resp_content_type, Plug.MIME.type("json")
+    plug :accepts, ~w(uber)
+    plug :put_resp_content_type, "application/vnd.uber-amundsen+json"
   end
 
   scope "/", Hyperledger do

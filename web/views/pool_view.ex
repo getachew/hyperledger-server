@@ -1,7 +1,7 @@
 defmodule Hyperledger.PoolView do
   use Hyperledger.Web, :view
   
-  def render("index.json", %{conn: conn, nodes: nodes}) do
+  def render("index.uber", %{conn: conn, nodes: nodes}) do
     %{
       uber: %{
         version: "1.0",

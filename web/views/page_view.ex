@@ -1,7 +1,7 @@
 defmodule Hyperledger.PageView do
   use Hyperledger.Web, :view
     
-  def render("index.json", %{conn: conn}) do
+  def render("index.uber", %{conn: conn}) do
     %{
       uber:
       %{

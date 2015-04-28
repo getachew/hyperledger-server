@@ -1,7 +1,7 @@
 defmodule Hyperledger.TransferView do
   use Hyperledger.Web, :view
   
-  def render("index.json", %{conn: conn, transfers: transfers}) do
+  def render("index.uber", %{conn: conn, transfers: transfers}) do
     %{
       uber: %{
         version: "1.0",
@@ -39,7 +39,7 @@ defmodule Hyperledger.TransferView do
     }
   end
   
-  def render("show.json", %{conn: conn, transfer: transfer}) do
+  def render("show.uber", %{conn: conn, transfer: transfer}) do
     %{
       uber: %{
         version: "1.0",

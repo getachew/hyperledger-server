@@ -1,7 +1,7 @@
 defmodule Hyperledger.AccountView do
   use Hyperledger.Web, :view
   
-  def render("index.json", %{conn: conn, accounts: accounts}) do
+  def render("index.uber", %{conn: conn, accounts: accounts}) do
     %{
       uber: %{
         version: "1.0",
@@ -36,7 +36,7 @@ defmodule Hyperledger.AccountView do
     }
   end
   
-  def render("show.json", %{conn: conn, account: account}) do
+  def render("show.uber", %{conn: conn, account: account}) do
     %{
       uber: %{
         version: "1.0",

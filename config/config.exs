@@ -22,6 +22,15 @@ config :logger, :console,
 config :hyperledger, Hyperledger.Repo,
   adapter: Ecto.Adapters.Postgres,
   url: {:system, "DATABASE_URL"}
+  
+# Configures Phoenix encoders
+config :phoenix, :format_encoders,
+  html: Phoenix.HTML.Engine,
+  json: Poison,
+  uber: Poison
+
+# Configures Plug extensions
+config :plug, :mimes, %{"application/vnd.uber-amundsen+json" => ["uber"]}
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

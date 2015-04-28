@@ -1,7 +1,7 @@
 defmodule Hyperledger.LedgerView do
   use Hyperledger.Web, :view
   
-  def render("index.json", %{conn: conn, ledgers: ledgers}) do
+  def render("index.uber", %{conn: conn, ledgers: ledgers}) do
     %{
       uber: %{
         version: "1.0",
@@ -35,7 +35,7 @@ defmodule Hyperledger.LedgerView do
     }
   end
   
-  def render("show.json", %{ledger: ledger}) do
+  def render("show.uber", %{ledger: ledger}) do
     %{
       uber: %{
         version: "1.0",

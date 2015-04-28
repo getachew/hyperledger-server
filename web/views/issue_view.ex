@@ -1,7 +1,7 @@
 defmodule Hyperledger.IssueView do
   use Hyperledger.Web, :view
   
-  def render("index.json", %{conn: conn, issues: issues, ledger: ledger}) do
+  def render("index.uber", %{conn: conn, issues: issues, ledger: ledger}) do
     %{
       uber: %{
         version: "1.0",
@@ -35,7 +35,7 @@ defmodule Hyperledger.IssueView do
     }
   end
   
-  def render("show.json", %{issue: issue}) do
+  def render("show.uber", %{issue: issue}) do
     %{
       uber: %{
         version: "1.0",

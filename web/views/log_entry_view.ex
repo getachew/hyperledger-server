@@ -1,7 +1,7 @@
 defmodule Hyperledger.LogEntryView do
   use Hyperledger.Web, :view
   
-  def render("index.json", %{entries: entries}) do
+  def render("index.uber", %{entries: entries}) do
     %{
       uber: %{
         version: "1.0",
@@ -14,7 +14,7 @@ defmodule Hyperledger.LogEntryView do
     }
   end
   
-  def render("error.json", _attrs) do
+  def render("error.uber", _attrs) do
     %{
       uber: %{
         version: "1.0",
@@ -27,7 +27,7 @@ defmodule Hyperledger.LogEntryView do
     }
   end
   
-  def render("show.json", %{entry: entry}) do
+  def render("show.uber", %{entry: entry}) do
     %{
       uber: %{
         version: "1.0",

@@ -32,7 +32,7 @@ defmodule Hyperledger.LogEntryController do
       {:error, _} ->
         conn
         |> put_status(:forbidden)
-        |> render "error.json"
+        |> render :error
     end
   end
 end
