@@ -29,6 +29,8 @@ defmodule Hyperledger.ConnCase do
       @endpoint Hyperledger.Endpoint
       # Import utility functions from this module
       import Hyperledger.ConnCase
+      # Import factory functions
+      import Hyperledger.TestFactory
     end
   end
 
@@ -42,34 +44,5 @@ defmodule Hyperledger.ConnCase do
     end
     
     :ok
-  end
-  
-  def create_node(n) do
-    Hyperledger.Node.create n, "http://localhost-#{n}", "#{n}"
-  end
-
-  def create_primary do
-    primary = create_node(1)
-    System.put_env("NODE_URL", primary.url)
-  end
-  
-  def create_ledger(hashable \\ "123") do
-    params = Hyperledger.ParamsHelpers.underscore_keys(ledger_params(hashable))
-    Hyperledger.Ledger.changeset(%Hyperledger.Ledger{}, params["ledger"])
-    |> Hyperledger.Ledger.create
-  end
-  
-  def ledger_params(hashable \\ "123") do
-    hash = :crypto.hash(:sha256, hashable)
-    {pk, _sk} = :crypto.generate_key(:ecdh, :secp256k1)
-    {pa_pk, _sk} = :crypto.generate_key(:ecdh, :secp256k1)
-    
-    %{
-      ledger: %{
-        hash: Base.encode32(hash),
-        publicKey: Base.encode32(pk),
-        primaryAccountPublicKey: Base.encode32(pa_pk)
-      }
-    }
   end
 end

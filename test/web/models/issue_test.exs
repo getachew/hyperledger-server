@@ -1,8 +1,6 @@
 defmodule Hyperledger.ModelTest.Issue do
-  use Hyperledger.ConnCase
-  use Ecto.Model
-  
-  alias Hyperledger.Repo
+  use Hyperledger.ModelCase
+
   alias Hyperledger.Issue
   alias Hyperledger.Ledger
   

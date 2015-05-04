@@ -17,6 +17,8 @@ defmodule Hyperledger.ModelCase do
       alias Hyperledger.Repo
       import Ecto.Model
       import Ecto.Query, only: [from: 2]
+      # Import factory functions
+      import Hyperledger.TestFactory
     end
   end
 
@@ -24,7 +26,11 @@ defmodule Hyperledger.ModelCase do
     unless tags[:async] do
       Ecto.Adapters.SQL.restart_test_transaction(Hyperledger.Repo, [])
     end
-
+    
+    on_exit fn ->
+      System.delete_env("NODE_URL")
+    end
+    
     :ok
   end
 end

@@ -1,7 +1,6 @@
 defmodule Hyperledger.ModelTest.Transfer do
-  use Hyperledger.ConnCase
+  use Hyperledger.ModelCase
   
-  alias Hyperledger.Repo
   alias Hyperledger.Account
   alias Hyperledger.Transfer
   

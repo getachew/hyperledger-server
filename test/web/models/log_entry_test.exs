@@ -1,10 +1,8 @@
 defmodule Hyperledger.LogEntryModelTest do
-  use Hyperledger.ConnCase
-  use Ecto.Model
+  use Hyperledger.ModelCase
   
   import Mock
   
-  alias Hyperledger.Repo
   alias Hyperledger.LogEntry
   alias Hyperledger.Ledger
   alias Hyperledger.Account
