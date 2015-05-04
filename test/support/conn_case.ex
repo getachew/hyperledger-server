@@ -53,10 +53,23 @@ defmodule Hyperledger.ConnCase do
     System.put_env("NODE_URL", primary.url)
   end
   
-  def create_ledger do
-    params = %{hash: "123", public_key: "abc", primary_account_public_key: "def"}
-    Hyperledger.Ledger.changeset(%Hyperledger.Ledger{}, params)
+  def create_ledger(hashable \\ "123") do
+    params = Hyperledger.ParamsHelpers.underscore_keys(ledger_params(hashable))
+    Hyperledger.Ledger.changeset(%Hyperledger.Ledger{}, params["ledger"])
     |> Hyperledger.Ledger.create
   end
   
+  def ledger_params(hashable \\ "123") do
+    hash = :crypto.hash(:sha256, hashable)
+    {pk, _sk} = :crypto.generate_key(:ecdh, :secp256k1)
+    {pa_pk, _sk} = :crypto.generate_key(:ecdh, :secp256k1)
+    
+    %{
+      ledger: %{
+        hash: Base.encode32(hash),
+        publicKey: Base.encode32(pk),
+        primaryAccountPublicKey: Base.encode32(pa_pk)
+      }
+    }
+  end
 end

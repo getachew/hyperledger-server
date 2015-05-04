@@ -33,15 +33,17 @@ defmodule Hyperledger.LogEntryModelTest do
   
   test "creating a log entry broadcasts a prepare to other nodes" do
     node = create_node(2)
+    
+    json_data = sample_ledger_data
     headers = ["Content-Type": "application/json"]
     body = %{logEntry: %{id: 1, view: 1, command: "ledger/create",
-                         data: sample_ledger_data},
+                         data: json_data},
              prepareConfirmations: [%{nodeId: 1, signature: "temp_signature"}],
              commitConfirmations: []}
            |> Poison.encode!
     with_mock HTTPotion,
     post: fn(_, _) -> %HTTPotion.Response{status_code: 201} end do
-      LogEntry.create command: "ledger/create", data: sample_ledger_data
+      LogEntry.create command: "ledger/create", data: json_data
       
       assert(called(HTTPotion.post("#{node.url}/log",
         headers: headers, body: body)))
@@ -54,18 +56,19 @@ defmodule Hyperledger.LogEntryModelTest do
     System.put_env("NODE_URL", node.url)
     create_node(3)
     
+    json_data = sample_ledger_data
     headers = ["Content-Type": "application/json"]
     body = %{logEntry: %{id: 1, view: 1, command: "ledger/create",
-                         data: sample_ledger_data},
+                         data: json_data},
              prepareConfirmations: [
                %{nodeId: 1, signature: "temp_signature"},
                %{nodeId: 2, signature: "temp_signature"}],
              commitConfirmations: []}
            |> Poison.encode!
+           
     with_mock HTTPotion,
-    post: fn(_, _) -> %HTTPotion.Response{status_code: 201}
-    end do
-      LogEntry.insert id: 1, view: 1, command: "ledger/create", data: sample_ledger_data,
+    post: fn(_, _) -> %HTTPotion.Response{status_code: 201} end do
+      LogEntry.insert id: 1, view: 1, command: "ledger/create", data: json_data,
         prepare_confirmations: [%{node_id: 1, signature: "temp_signature"}],
         commit_confirmations: []
       
@@ -77,20 +80,22 @@ defmodule Hyperledger.LogEntryModelTest do
   test "a log entry marked as prepared broadcasts a commit to other nodes" do
     node = create_node(2)
     
+    json_data = sample_ledger_data
     headers = ["Content-Type": "application/json"]
     body = %{logEntry: %{id: 1, view: 1, command: "ledger/create",
-                         data: sample_ledger_data},
+                         data: json_data},
              prepareConfirmations: [
                %{nodeId: 1, signature: "temp_signature"},
                %{nodeId: 2, signature: "temp_signature"}],
              commitConfirmations: [
                %{nodeId: 1, signature: "temp_signature"}]}
            |> Poison.encode!
+           
     with_mock HTTPotion,
     post: fn(_, _) -> %HTTPotion.Response{status_code: 201} end do
-      LogEntry.create command: "ledger/create", data: sample_ledger_data
+      LogEntry.create command: "ledger/create", data: json_data
       
-      LogEntry.insert id: 1, view: 1, command: "ledger/create", data: sample_ledger_data,
+      LogEntry.insert id: 1, view: 1, command: "ledger/create", data: json_data,
         prepare_confirmations: [%{node_id: 2, signature: "temp_signature"}],
         commit_confirmations: []
             
@@ -197,10 +202,8 @@ defmodule Hyperledger.LogEntryModelTest do
   
   test "log entries are executed in order" do
     node = create_node(2)
-    data_1 = %{ledger: %{hash: "123", publicKey: "abc", primaryAccountPublicKey: "cde"}}
-             |> Poison.encode!
-    data_2 = %{ledger: %{hash: "456", publicKey: "abc", primaryAccountPublicKey: "fgh"}}
-             |> Poison.encode!
+    data_1 = Poison.encode!(ledger_params("123"))
+    data_2 = Poison.encode!(ledger_params("456"))
     {:ok, log_entry_1} = LogEntry.create command: "ledger/create", data: data_1
     {:ok, log_entry_2} = LogEntry.create command: "ledger/create", data: data_2
     LogEntry.add_prepare(log_entry_1, node.id, "temp_signature")
@@ -231,39 +234,38 @@ defmodule Hyperledger.LogEntryModelTest do
   end
   
   test "executing log entry creates issue and changes primary wallet balances" do
-    create_ledger
+    {:ok, ledger} = create_ledger
     data = %{issue:
              %{uuid: Ecto.UUID.generate,
-               ledgerHash: "123",
+               ledgerHash: ledger.hash,
                amount: 100}}
            |> Poison.encode!
     LogEntry.create command: "issue/create", data: data
         
     assert Repo.all(Issue)    |> Enum.count == 1
-    assert Repo.get(Account, "def").balance == 100
+    assert Repo.get(Account, ledger.primary_account_public_key).balance == 100
   end
   
   test "executing log entry creates transfer and changes wallet balances" do
-    create_ledger
-    Issue.changeset(%Issue{}, %{uuid: Ecto.UUID.generate, ledger_hash: "123", amount: 100})
+    {:ok, ledger} = create_ledger
+    Issue.changeset(%Issue{}, %{uuid: Ecto.UUID.generate, ledger_hash: ledger.hash, amount: 100})
     |> Issue.create
-    %Account{public_key: "ghi", ledger_hash: "123"}
+    %Account{public_key: "ghi", ledger_hash: ledger.hash}
     |> Repo.insert
     data = %{transfer:
              %{uuid: Ecto.UUID.generate,
                amount: 100,
-               sourcePublicKey: "def",
+               sourcePublicKey: ledger.primary_account_public_key,
                destinationPublicKey: "ghi"}}
            |> Poison.encode!
     LogEntry.create command: "transfer/create", data: data
     
     assert Repo.all(Transfer) |> Enum.count == 1
-    assert Repo.get(Account, "def").balance == 0
+    assert Repo.get(Account, ledger.primary_account_public_key).balance == 0
     assert Repo.get(Account, "ghi").balance == 100
   end
   
   defp sample_ledger_data do
-    %{ledger: %{hash: "123", publicKey: "abc", primaryAccountPublicKey: "def"}}
-    |> Poison.encode!
+    Poison.encode!(ledger_params)
   end
 end

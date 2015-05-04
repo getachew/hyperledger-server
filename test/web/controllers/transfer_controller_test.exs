@@ -9,7 +9,7 @@ defmodule Hyperledger.TransferControllerTest do
     {:ok, ledger} = create_ledger
     account = build(ledger, :accounts)
     %{ account | public_key: "fgh" } |> Repo.insert
-    :ok
+    {:ok, ledger: ledger}
   end
 
   test "GET transfers" do
@@ -17,9 +17,10 @@ defmodule Hyperledger.TransferControllerTest do
     assert conn.status == 200
   end
   
-  test "POST transfers creates log entry and a transfer" do
+  test "POST transfers creates log entry and a transfer", %{ledger: ledger} do
     uuid = Ecto.UUID.generate
-    body = %{transfer: %{uuid: uuid, sourcePublicKey: "def", destinationPublicKey: "fgh", amount: 100}}
+    source = ledger.primary_account_public_key
+    body = %{transfer: %{uuid: uuid, sourcePublicKey: source, destinationPublicKey: "fgh", amount: 100}}
     conn = post conn(), "/transfers", body
     
     assert conn.status == 201

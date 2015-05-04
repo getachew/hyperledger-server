@@ -28,6 +28,9 @@ defmodule Hyperledger.Ledger do
   def changeset(ledger, params \\ nil) do
     ledger
     |> cast(params, @required_fields, @optional_fields)
+    |> validate_encoding(:hash)
+    |> validate_encoding(:public_key)
+    |> validate_encoding(:primary_account_public_key)
   end
   
   def create(changeset) do
@@ -39,6 +42,15 @@ defmodule Hyperledger.Ledger do
       |> Repo.insert
       
       ledger
+    end
+  end
+  
+  def validate_encoding(changeset, field) do
+    validate_change changeset, field, fn field, value ->
+      case Base.decode32(value) do
+        :error -> [{field, :not_base_32_encoded}]
+        {:ok, _} -> []
+      end
     end
   end
   

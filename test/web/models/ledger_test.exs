@@ -6,27 +6,48 @@ defmodule Hyperledger.LedgerModelTest do
   alias Hyperledger.Account
   
   setup do
-    params = 
+    hash = :crypto.hash(:sha256, "123")
+    {pk, _sk} = :crypto.generate_key(:ecdh, :secp256k1)
+    {pa_pk, _sk} = :crypto.generate_key(:ecdh, :secp256k1)
+    
+    params =
       %{
-        hash: "123",
-        public_key: "abc",
-        primary_account_public_key: "cde"
+        hash: Base.encode32(hash),
+        public_key: Base.encode32(pk),
+        primary_account_public_key: Base.encode32(pa_pk)
       }
     {:ok, params: params}
+  end
+  
+  test "`changeset` checks encoding of fields", %{params: params} do
+    bad_enc_cs =
+      Ledger.changeset(
+        %Ledger{},
+        %{
+          hash: Base.encode32(:crypto.rand_bytes(31)),
+          public_key: "00",
+          primary_account_public_key: "foo bar"}
+      )
+    
+    assert Enum.count(bad_enc_cs.errors) == 2
+    
+    cs = Ledger.changeset(%Ledger{}, params)
+    
+    assert cs.valid? == true
   end
   
   test "`create` inserts a changeset into the db", %{params: params} do
     cs = Ledger.changeset(%Ledger{}, params)
     Ledger.create(cs)
     
-    assert Repo.get(Ledger, "123") != nil
+    assert Repo.get(Ledger, params[:hash]) != nil
   end
   
   test "`create` also creates an associated primary account", %{params: params} do
     cs = Ledger.changeset(%Ledger{}, params)
     Ledger.create(cs)
     
-    assert Repo.get(Account, "cde") != nil
+    assert Repo.get(Account, params[:primary_account_public_key]) != nil
   end
   
   test "`create` returns the ledger", %{params: params} do

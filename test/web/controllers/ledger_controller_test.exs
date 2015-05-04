@@ -15,8 +15,7 @@ defmodule Hyperledger.LedgerControllerTest do
   end
   
   test "create ledger through log entry" do
-    body = %{ledger: %{hash: "123", publicKey: "abc", primaryAccountPublicKey: "def"}}
-    conn = post conn(), "/ledgers", body
+    conn = post conn(), "/ledgers", ledger_params
     
     assert conn.status == 201
     assert Repo.all(Ledger)   |> Enum.count == 1
