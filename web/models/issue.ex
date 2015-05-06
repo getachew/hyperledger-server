@@ -1,6 +1,7 @@
 defmodule Hyperledger.Issue do
   use Ecto.Model
-
+  import Hyperledger.Validations
+  
   alias Hyperledger.Repo
   alias Hyperledger.Ledger
   
@@ -24,6 +25,8 @@ defmodule Hyperledger.Issue do
   def changeset(transfer, params \\ nil) do
     transfer
     |> cast(params, @required_fields, @optional_fields)
+    |> validate_existence(:ledger_hash, Ledger)
+    |> validate_number(:amount, greater_than: 0)
   end
   
   def create(changeset) do

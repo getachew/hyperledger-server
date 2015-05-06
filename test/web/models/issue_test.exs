@@ -15,6 +15,18 @@ defmodule Hyperledger.ModelTest.Issue do
     {:ok, params: params}
   end
   
+  test "`changeset` validates that the ledger exists", %{params: params} do
+    bad_params = Map.merge(params, %{ledger_hash: "123"})
+    cs = Issue.changeset(%Issue{}, bad_params)
+    assert cs.valid? == false
+  end
+  
+  test "`changeset` validates that the amount is greater than zero", %{params: params} do
+    bad_params = Map.merge(params, %{amount: 0})
+    cs = Issue.changeset(%Issue{}, bad_params)
+    assert cs.valid? == false
+  end
+  
   test "`create` inserts a changeset into the db", %{params: params} do
     cs = Issue.changeset(%Issue{}, params)
     Issue.create(cs)
