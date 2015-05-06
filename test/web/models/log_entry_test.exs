@@ -223,12 +223,14 @@ defmodule Hyperledger.LogEntryModelTest do
   end
   
   test "executing log entry creates account" do
-    data = %{account: %{ledgerHash: "abc", publicKey: "cde"}}
+    {:ok, ledger} = create_ledger
+    {pk, _sk} = :crypto.generate_key(:ecdh, :secp256k1)
+    data = %{account: %{ledgerHash: ledger.hash, publicKey: Base.encode32(pk)}}
            |> Poison.encode!
     LogEntry.create command: "account/create", data: data
         
     assert Repo.all(LogEntry) |> Enum.count == 1
-    assert Repo.all(Account)  |> Enum.count == 1
+    assert Repo.all(Account)  |> Enum.count == 2
   end
   
   test "executing log entry creates issue and changes primary wallet balances" do

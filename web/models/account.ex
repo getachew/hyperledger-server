@@ -1,7 +1,9 @@
 defmodule Hyperledger.Account do
   use Ecto.Model
+  import Hyperledger.Validations
   
   alias Hyperledger.Repo
+  alias Hyperledger.Ledger
   
   @primary_key {:public_key, :string, []}
   schema "accounts" do
@@ -19,10 +21,11 @@ defmodule Hyperledger.Account do
   def changeset(account, params \\ nil) do
     account
     |> cast(params, @required_fields, @optional_fields)
+    |> validate_encoding(:public_key)
+    |> validate_existence(:ledger_hash, Ledger)
   end
   
   def create(changeset) do
     Repo.insert(changeset)
   end
-    
 end

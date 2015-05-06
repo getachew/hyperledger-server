@@ -6,8 +6,8 @@ defmodule Hyperledger.AccountControllerTest do
 
   setup do
     create_primary
-    create_ledger
-    :ok
+    {:ok, ledger} = create_ledger
+    {:ok, ledger: ledger}
   end
 
   test "GET ledger accounts" do
@@ -15,8 +15,9 @@ defmodule Hyperledger.AccountControllerTest do
     assert conn.status == 200
   end
   
-  test "POST /accounts creates log entry and account" do
-    body = %{account: %{publicKey: "abc", ledgerHash: "123"}}
+  test "POST /accounts creates log entry and account", %{ledger: ledger} do
+    {pk, _sk} = :crypto.generate_key(:ecdh, :secp256k1)
+    body = %{account: %{publicKey: Base.encode32(pk), ledgerHash: ledger.hash}}
     conn = post conn(), "/accounts", body
     
     assert conn.status == 201
