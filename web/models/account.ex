@@ -12,7 +12,9 @@ defmodule Hyperledger.Account do
     timestamps
     
     belongs_to :ledger, Hyperledger.Ledger,
-      foreign_key: :ledger_hash, type: :string
+      foreign_key: :ledger_hash,
+      references: :hash,
+      type: :string
   end
   
   @required_fields ~w(public_key ledger_hash)

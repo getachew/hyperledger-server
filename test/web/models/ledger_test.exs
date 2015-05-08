@@ -36,17 +36,23 @@ defmodule Hyperledger.LedgerModelTest do
   end
   
   test "`create` inserts a changeset into the db", %{params: params} do
-    cs = Ledger.changeset(%Ledger{}, params)
-    Ledger.create(cs)
+    Ledger.changeset(%Ledger{}, params)
+    |> Ledger.create
     
-    assert Repo.get(Ledger, params[:hash]) != nil
+    assert Repo.get(Ledger, params.hash) != nil
   end
   
   test "`create` also creates an associated primary account", %{params: params} do
-    cs = Ledger.changeset(%Ledger{}, params)
-    Ledger.create(cs)
+    {:ok, ledger} = Ledger.changeset(%Ledger{}, params)
+                    |> Ledger.create
     
-    assert Repo.get(Account, params[:primary_account_public_key]) != nil
+    primary_acc =
+      Account
+      |> Repo.get(params.primary_account_public_key)
+      |> Repo.preload(:ledger)
+    
+    assert primary_acc != nil
+    assert primary_acc.ledger == ledger
   end
   
   test "`create` returns the ledger", %{params: params} do

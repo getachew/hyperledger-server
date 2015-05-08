@@ -39,8 +39,11 @@ defmodule Hyperledger.Ledger do
       ledger = Repo.insert(changeset)
       
       account = build(ledger, :primary_account)
-      %{ account | public_key: ledger.primary_account_public_key}
-      |> Repo.insert
+      %{
+        account |
+        public_key: ledger.primary_account_public_key,
+        ledger_hash: ledger.hash
+      } |> Repo.insert
       
       ledger
     end
