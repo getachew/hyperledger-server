@@ -18,6 +18,8 @@ To install the server:
 3. Create a database with `mix ecto.create`
 4. Run the migrations with `mix ecto.migrate`
 5. Run `npm install` to install tools for asset compilation
-6. Start the server with `mix phoenix.server`
+6. Create a database entry for the local node; run `iex -S mix` and then run
+   `> Hyperledger.Node.create(1, System.get_env("NODE_URL"), System.get_env("PUBLIC_KEY"))`
+7. Start the server with `mix phoenix.server`
 
 The server should now be running at `localhost:4000`.
