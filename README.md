@@ -8,16 +8,15 @@ loose coupling between parties, especially the clients.
 
 This software is currently in beta so run at your own risk.
 
-To start the server:
+Prerequisites; Elixir v1.0.4, PostgreSQL
+
+To install the server:
 
 1. Install dependencies with `mix deps.get`
-2. Create a database with `mix ecto.create Hyperledger.Repo`
-3. Run Migration with `mix ecto.migrate Hyperledger.Repo`
-4. Start Hyperledger with `mix phoenix.server`
+2. Modify the `DATABASE_URL` environment variable in the `.env` file to
+   reference your Postgres user
+3. Create a database with `mix ecto.create`
+4. Run the migrations with `mix ecto.migrate`
+5. Start the server with `mix phoenix.server`
 
-The endpoint is now running at `localhost:4000`.
-
-## License
-
-hyperledger Reference Server is released under the
-[MIT License](http://www.opensource.org/licenses/MIT).
+The server should now be running at `localhost:4000`.
