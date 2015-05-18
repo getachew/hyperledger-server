@@ -20,7 +20,7 @@ defmodule Hyperledger.Web do
       import Hyperledger.Router.Helpers
 
       # Import all HTML functions (forms, tags, etc)
-      use Phoenix.HTML
+      # use Phoenix.HTML
     end
   end
 
