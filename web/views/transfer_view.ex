@@ -14,24 +14,7 @@ defmodule Hyperledger.TransferView do
             id: "transfers",
             rel: ["collection"],
             data: Enum.map(transfers, fn transfer ->
-              %{
-                name: "transfer",
-                rel: ["item"],
-                data: [
-                  %{
-                    name: "uuid",
-                    value: transfer.uuid
-                  },
-                  %{
-                    name: "sourcePublicKey",
-                    value: transfer.source_public_key
-                  },
-                  %{
-                    name: "destinationPublicKey",
-                    value: transfer.destination_public_key
-                  }
-                ]
-              }
+              transfer_body(transfer, ["item"])
             end)
           }
         ]
@@ -39,36 +22,39 @@ defmodule Hyperledger.TransferView do
     }
   end
   
-  def render("show.uber", %{conn: conn, transfer: transfer}) do
+  def render("show.uber", %{transfer: transfer}) do
     %{
       uber: %{
         version: "1.0",
         data: [
-          %{
-            rel: ["self"],
-            name: "transfer",
-            data: [
-              %{
-                name: "uuid",
-                value: transfer.uuid
-              },
-              %{
-                name: "sourcePublicKey",
-                value: transfer.source_public_key
-              },
-              %{
-                name: "destinationPublicKey",
-                value: transfer.destination_public_key
-              },
-              %{
-                name: "amount",
-                value: transfer.amount
-              }
-            ]
-          }
+          transfer_body(transfer, ["self"])
         ]
       }
     }
   end
   
+  defp transfer_body(transfer, rels) do
+    %{
+      name: "transfer",
+      rel: rels,
+      data: [
+        %{
+          name: "uuid",
+          value: transfer.uuid
+        },
+        %{
+          name: "sourcePublicKey",
+          value: transfer.source_public_key
+        },
+        %{
+          name: "destinationPublicKey",
+          value: transfer.destination_public_key
+        },
+        %{
+          name: "amount",
+          value: transfer.amount
+        }
+      ]
+    }
+  end
 end

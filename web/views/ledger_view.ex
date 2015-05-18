@@ -14,20 +14,7 @@ defmodule Hyperledger.LedgerView do
             id: "ledgers",
             rel: ["collection"],
             data: Enum.map(ledgers, fn ledger ->
-              %{
-                name: "ledger",
-                rel: ["item"],
-                data: [
-                  %{
-                    name: "hash",
-                    value: ledger.hash
-                  },
-                  %{
-                    name: "publicKey",
-                    value: ledger.public_key
-                  }
-                ]
-              }
+              ledger_body(ledger, ["item"], conn)
             end)
           }
         ]
@@ -35,18 +22,40 @@ defmodule Hyperledger.LedgerView do
     }
   end
   
-  def render("show.uber", %{ledger: ledger}) do
+  def render("show.uber", %{conn: conn, ledger: ledger}) do
     %{
       uber: %{
         version: "1.0",
-        data: %{
-          ledger: %{
-            hash: ledger.hash,
-            publicKey: ledger.public_key
-          }
-        }
+        data: [
+          ledger_body(ledger, ["self"], conn)
+        ]
       }
     }
   end
   
+  defp ledger_body(ledger, rels, conn) do
+    %{
+      name: "ledger",
+      rel: rels,
+      data: [
+        %{
+          name: "hash",
+          value: ledger.hash
+        },
+        %{
+          name: "publicKey",
+          value: ledger.public_key
+        },
+        %{
+          name: "primaryAccount",
+          url: account_url(conn, :show, ledger.primary_account_public_key)
+        },
+        %{
+          name: "issues",
+          rel: ["collection"],
+          url: ledger_issue_url(conn, :index, ledger.hash)
+        }
+      ]
+    }
+  end
 end

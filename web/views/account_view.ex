@@ -14,21 +14,7 @@ defmodule Hyperledger.AccountView do
             id: "accounts",
             rel: ["collection"],
             data: Enum.map(accounts, fn account ->
-              %{
-                name: "account",
-                rel: ["item"],
-                url: account_url(conn, :show, account.public_key),
-                data: [
-                  %{
-                    name: "ledgerHash",
-                    value: account.ledger_hash
-                  },
-                  %{
-                    name: "publicKey",
-                    value: account.public_key
-                  }
-                ]
-              }
+              account_body(account, "item", conn)
             end)
           }
         ]
@@ -41,24 +27,27 @@ defmodule Hyperledger.AccountView do
       uber: %{
         version: "1.0",
         data: [
-          %{
-            rel: ["self"],
-            name: "account",
-            url: account_url(conn, :show, account.public_key),
-            data: [
-              %{
-                name: "ledgerHash",
-                value: account.ledger_hash
-              },
-              %{
-                name: "publicKey",
-                value: account.public_key
-              }
-            ]
-          }
+          account_body(account, ["self"], conn)
         ]
       }
     }
   end
   
+  defp account_body(account, rels, conn) do
+    %{
+      name: "account",
+      rel: rels,
+      url: account_url(conn, :show, account.public_key),
+      data: [
+        %{
+          name: "ledgerHash",
+          value: account.ledger_hash
+        },
+        %{
+          name: "publicKey",
+          value: account.public_key
+        }
+      ]
+    }
+  end
 end

@@ -14,20 +14,7 @@ defmodule Hyperledger.IssueView do
             id: "issues",
             rel: ["collection"],
             data: Enum.map(issues, fn issue ->
-              %{
-                name: "issue",
-                rel: ["item"],
-                data: [
-                  %{
-                    name: "uuid",
-                    value: issue.uuid
-                  },
-                  %{
-                    name: "amount",
-                    value: issue.amount
-                  }
-                ]
-              }
+              issue_body(issue, ["item"])
             end)
           }
         ]
@@ -40,19 +27,26 @@ defmodule Hyperledger.IssueView do
       uber: %{
         version: "1.0",
         data: [
-          %{
-            rel: ["self"],
-            name: "issue",
-            data: [
-              %{
-                name: "amount",
-                value: issue.amount
-              }
-            ]
-          }
+          issue_body(issue, ["self"])
         ]
       }
     }
   end
   
+  defp issue_body(issue, rels) do
+    %{
+      name: "issue",
+      rel: rels,
+      data: [
+        %{
+          name: "uuid",
+          value: issue.uuid
+        },
+        %{
+          name: "amount",
+          value: issue.amount
+        }
+      ]
+    }
+  end
 end

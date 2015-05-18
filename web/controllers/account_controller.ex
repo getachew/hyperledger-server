@@ -18,7 +18,6 @@ defmodule Hyperledger.AccountController do
     render conn, :show, account: account
   end
   
-
   def create(conn, params) do
     json_data = params |> Map.take(["account"]) |> Poison.encode!
     LogEntry.create(command: "account/create", data: json_data)
