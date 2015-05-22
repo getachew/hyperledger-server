@@ -21,7 +21,9 @@ defmodule Hyperledger.TransferControllerTest do
     uuid = Ecto.UUID.generate
     source = ledger.primary_account_public_key
     body = %{transfer: %{uuid: uuid, sourcePublicKey: source, destinationPublicKey: "fgh", amount: 100}}
-    conn = post conn(), "/transfers", body
+    conn = conn()
+      |> put_req_header("content-type", "application/json")
+      |> post("/transfers", Poison.encode!(body))
     
     assert conn.status == 201
     assert Repo.all(Transfer) |> Enum.count == 1

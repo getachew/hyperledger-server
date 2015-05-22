@@ -25,7 +25,6 @@ config :hyperledger, Hyperledger.Repo,
   
 # Configures Phoenix encoders
 config :phoenix, :format_encoders,
-  html: Phoenix.HTML.Engine,
   json: Poison,
   uber: Poison
 

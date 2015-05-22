@@ -16,8 +16,8 @@ defmodule Hyperledger.Endpoint do
   plug Plug.Logger
 
   plug Plug.Parsers,
-    parsers: [:urlencoded, :multipart, :json],
-    pass: ["*/*"],
+    parsers: [Hyperledger.Parsers.JSON],
+    pass: ["application/json"],
     json_decoder: Poison
   
   plug Plug.MethodOverride

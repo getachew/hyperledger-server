@@ -14,7 +14,9 @@ defmodule Hyperledger.LogEntryControllerTest do
   end
   
   test "refuse to create new log when primary" do
-    conn = post conn(), "/log", log_entry_body
+    conn = conn()
+      |> put_req_header("content-type", "application/json")
+      |> post("/log", Poison.encode!(log_entry_body))
 
     assert conn.status == 403
     assert Repo.all(LogEntry) == []
@@ -24,7 +26,9 @@ defmodule Hyperledger.LogEntryControllerTest do
     node = create_node(2)
     System.put_env("NODE_URL", node.url)
     
-    conn = post conn(), "/log", log_entry_body
+    conn = conn()
+       |> put_req_header("content-type", "application/json")
+       |> post("/log", Poison.encode!(log_entry_body))
 
     assert conn.status == 201
     assert Repo.all(LogEntry) |> Enum.count == 1
