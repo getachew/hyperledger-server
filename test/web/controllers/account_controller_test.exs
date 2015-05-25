@@ -17,7 +17,7 @@ defmodule Hyperledger.AccountControllerTest do
   
   test "POST /accounts creates log entry and account", %{ledger: ledger} do
     {pk, _sk} = :crypto.generate_key(:ecdh, :secp256k1)
-    body = %{account: %{publicKey: Base.encode32(pk), ledgerHash: ledger.hash}}
+    body = %{account: %{publicKey: Base.encode16(pk), ledgerHash: ledger.hash}}
     conn = conn()
        |> put_req_header("content-type", "application/json")
        |> post("/accounts", Poison.encode!(body))

@@ -11,9 +11,9 @@ defmodule Hyperledger.LedgerModelTest do
     
     params =
       %{
-        hash: Base.encode32(hash),
-        public_key: Base.encode32(pk),
-        primary_account_public_key: Base.encode32(pa_pk)
+        hash: Base.encode16(hash),
+        public_key: Base.encode16(pk),
+        primary_account_public_key: Base.encode16(pa_pk)
       }
     {:ok, params: params}
   end
@@ -23,7 +23,7 @@ defmodule Hyperledger.LedgerModelTest do
       Ledger.changeset(
         %Ledger{},
         %{
-          hash: Base.encode32(:crypto.rand_bytes(31)),
+          hash: Base.encode64(:crypto.rand_bytes(31)),
           public_key: "00",
           primary_account_public_key: "foo bar"}
       )

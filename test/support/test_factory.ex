@@ -19,17 +19,31 @@ defmodule Hyperledger.TestFactory do
     |> Ledger.create
   end
   
-  def ledger_params(hashable \\ "123") do
+  def ledger_params(hashable \\ "123", with_auth \\ false) do
     hash = :crypto.hash(:sha256, hashable)
-    {pk, _sk} = :crypto.generate_key(:ecdh, :secp256k1)
-    {pa_pk, _sk} = :crypto.generate_key(:ecdh, :secp256k1)
+    {pk, _sk} = key_pair
+    {pa_pk, _sk} = key_pair
     
-    %{
+    body = %{
       ledger: %{
-        hash: Base.encode32(hash),
-        publicKey: Base.encode32(pk),
-        primaryAccountPublicKey: Base.encode32(pa_pk)
+        hash: Base.encode16(hash),
+        publicKey: Base.encode16(pk),
+        primaryAccountPublicKey: Base.encode16(pa_pk)
       }
     }
+    
+    if with_auth do
+      sig = :crypto.sign(:ecdsa, :sha256, Poison.encode!(body), [pk, :secp256k1])
+      %{
+        auth: Base.encode16(pk),
+        sig: Base.encode16(sig)
+      } |> Map.merge body
+    else
+      body
+    end
+  end
+  
+  defp key_pair do
+    :crypto.generate_key(:ecdh, :secp256k1)
   end
 end

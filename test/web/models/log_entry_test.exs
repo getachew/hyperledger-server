@@ -225,7 +225,7 @@ defmodule Hyperledger.LogEntryModelTest do
   test "executing log entry creates account" do
     {:ok, ledger} = create_ledger
     {pk, _sk} = :crypto.generate_key(:ecdh, :secp256k1)
-    data = %{account: %{ledgerHash: ledger.hash, publicKey: Base.encode32(pk)}}
+    data = %{account: %{ledgerHash: ledger.hash, publicKey: Base.encode16(pk)}}
            |> Poison.encode!
     LogEntry.create command: "account/create", data: data
         

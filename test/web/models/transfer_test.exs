@@ -8,7 +8,7 @@ defmodule Hyperledger.ModelTest.Transfer do
   setup do
     {:ok, ledger} = create_ledger
     {d_pk, _sk} = :crypto.generate_key(:ecdh, :secp256k1)    
-    dest_key = Base.encode32(d_pk)
+    dest_key = Base.encode16(d_pk)
     
     destination =
       %Account{}

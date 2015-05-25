@@ -6,7 +6,7 @@ defmodule Hyperledger.ModelTest.Account do
   setup do
     {:ok, ledger} = create_ledger
     {pk, _sk} = :crypto.generate_key(:ecdh, :secp256k1)
-    {:ok, ledger: ledger, pk: Base.encode32(pk)}
+    {:ok, ledger: ledger, pk: Base.encode16(pk)}
   end
   
   test "`changeset` validates encoding of key", %{ledger: ledger} do
