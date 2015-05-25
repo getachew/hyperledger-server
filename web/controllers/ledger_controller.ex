@@ -5,6 +5,7 @@ defmodule Hyperledger.LedgerController do
   alias Hyperledger.Ledger
   alias Hyperledger.LogEntry
 
+  plug Hyperledger.Authentication when action in [:create]
   plug :action
 
   def index(conn, _params) do
@@ -13,11 +14,27 @@ defmodule Hyperledger.LedgerController do
   end
   
   def create(conn, params) do
-    json_data = params |> Map.take(["ledger"]) |> Poison.encode!
-    LogEntry.create(command: "ledger/create", data: json_data)
-    ledger = Repo.get(Ledger, params["ledger"]["hash"])
-    conn
-    |> put_status(:created)
-    |> render :show, ledger: ledger
+    log_entry = %{
+      command: "ledger/create",
+      data: conn.private.raw_json_body,
+      authentication_key: conn.assigns[:authentication_key],
+      signature: conn.assigns[:signature]
+    }
+    changeset = LogEntry.changeset(%LogEntry{}, log_entry)
+    
+    if changeset.valid? do
+      LogEntry.create(
+        command: "ledger/create",
+        data: conn.private.raw_json_body
+      )
+      ledger = Repo.get(Ledger, params["ledger"]["hash"])
+      conn
+      |> put_status(:created)
+      |> render :show, ledger: ledger
+    else
+      conn
+      |> put_status(:unprocessable_entity)
+      |> halt
+    end
   end
 end
