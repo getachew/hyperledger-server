@@ -1,6 +1,7 @@
 defmodule Hyperledger.LogEntry do
   use Ecto.Model
   import Hyperledger.ParamsHelpers, only: [underscore_keys: 1]
+  import Hyperledger.Validations
   
   require Logger
   
@@ -18,6 +19,8 @@ defmodule Hyperledger.LogEntry do
     field :view, :integer
     field :command, :string
     field :data, :string
+    field :authentication_key, :string
+    field :signature, :string
     field :prepared, :boolean, default: false
     field :committed, :boolean, default: false
     field :executed, :boolean, default: false
@@ -27,7 +30,18 @@ defmodule Hyperledger.LogEntry do
     has_many :prepare_confirmations, PrepareConfirmation
     has_many :commit_confirmations, CommitConfirmation
   end
-    
+  
+  @required_fields ~w(command data authentication_key signature)
+  @optional_fields ~w()
+  
+  def changeset(log_entry, params \\ nil) do
+    log_entry
+    |> cast(params, @required_fields, @optional_fields)
+    |> validate_encoding(:authentication_key)
+    |> validate_encoding(:signature)
+    |> validate_authenticity
+  end
+  
   def create(command: command, data: data) do
     Repo.transaction fn ->
       id = (Repo.all(LogEntry) |> Enum.count) + 1
@@ -180,5 +194,21 @@ defmodule Hyperledger.LogEntry do
       commitConfirmations: Enum.map(log_entry.commit_confirmations, fn conf ->
         %{nodeId: conf.node_id, signature: conf.signature}
       end)}
+  end
+  
+  defp validate_authenticity(changeset) do
+    key = changeset.changes.authentication_key
+    sig = changeset.changes.signature
+    validate_change changeset, :data, fn :data, body ->
+      case {Base.decode16(key), Base.decode16(sig)} do
+        {{:ok, key}, {:ok, sig}} ->
+          if :crypto.verify(:ecdsa, :sha256, body, sig, [key, :secp256k1]) do
+            []
+          else
+            [{:data, :authentication_failed}]
+          end
+        _ -> []
+      end
+    end
   end
 end

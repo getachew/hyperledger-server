@@ -23,6 +23,17 @@ defmodule Hyperledger.LogEntryModelTest do
     assert log_entry.view == 1
   end
   
+  test "`changeset` validates signature" do
+    params = Map.merge(valid_ledger_params, %{signature: ""})
+    cs = LogEntry.changeset(%LogEntry{}, params)
+    
+    assert cs.valid? == false
+    
+    cs = LogEntry.changeset(%LogEntry{}, valid_ledger_params)
+    
+    assert cs.valid? == true
+  end
+  
   test "creating a log entry also appends a prepare confirmation from self" do
     {:ok, log_entry} = LogEntry.create command: "ledger/create", data: sample_ledger_data
         
@@ -268,4 +279,20 @@ defmodule Hyperledger.LogEntryModelTest do
   defp sample_ledger_data do
     Poison.encode!(ledger_params)
   end
+  
+  defp valid_ledger_params do
+    %{
+      ledger: ledger,
+      auth: ap,
+      sig: sig
+    } = ledger_params("valid", true)
+    
+    %{
+      command: "ledger/create",
+      data: Poison.encode!(%{ledger: ledger}),
+      authentication_key: ap,
+      signature: sig
+    }
+  end
+  
 end
