@@ -23,7 +23,7 @@ defmodule Hyperledger.LedgerModelTest do
       Ledger.changeset(
         %Ledger{},
         %{
-          hash: Base.encode64(:crypto.rand_bytes(31)),
+          hash: "GJ9D68b3RCw2HgjzEhtH+TjMcaiYTNntB4W8xa8FhA=="),
           public_key: "00",
           primary_account_public_key: "foo bar"}
       )
