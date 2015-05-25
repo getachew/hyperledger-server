@@ -21,7 +21,7 @@ defmodule Hyperledger.TestFactory do
   
   def ledger_params(hashable \\ "123", with_auth \\ false) do
     hash = :crypto.hash(:sha256, hashable)
-    {pk, _sk} = key_pair
+    {pk, sk} = key_pair
     {pa_pk, _sk} = key_pair
     
     body = %{
@@ -33,7 +33,7 @@ defmodule Hyperledger.TestFactory do
     }
     
     if with_auth do
-      sig = :crypto.sign(:ecdsa, :sha256, Poison.encode!(body), [pk, :secp256k1])
+      sig = :crypto.sign(:ecdsa, :sha256, Poison.encode!(body), [sk, :secp256k1])
       %{
         auth: Base.encode16(pk),
         sig: Base.encode16(sig)
