@@ -1,0 +1,14 @@
+--- 
+db: 
+  environment: 
+    - POSTGRES_PASSWORD=mysecretpassword
+  hostname: postgres
+  image: postgres
+  ports: 
+    - "5432:5432"
+hlserver: 
+  build: "."
+  links: 
+    - db:hyperledger
+  ports: 
+    - "4000:4000"
